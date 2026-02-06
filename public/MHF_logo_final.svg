@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 304.72 51.21">
+  <defs>
+    <style>
+      .cls-1, .cls-2, .cls-3 {
+        fill: none;
+      }
+
+      .cls-2 {
+        stroke-width: 2.5px;
+      }
+
+      .cls-2, .cls-3 {
+        stroke: #003;
+        stroke-linejoin: round;
+      }
+
+      .cls-4 {
+        font-size: 4px;
+      }
+
+      .cls-4, .cls-5 {
+        font-family: Avenir-Medium, Avenir;
+        font-weight: 500;
+        letter-spacing: .01em;
+      }
+
+      .cls-6 {
+        fill: #006c4d;
+      }
+
+      .cls-7 {
+        fill: #006c4d;
+      }
+
+      .cls-5 {
+        font-size: 24px;
+      }
+
+      .cls-8 {
+        fill: #fff;
+      }
+
+      .cls-9 {
+        fill: #cf282d;
+      }
+
+      .cls-10 {
+        fill: #000f37;
+      }
+
+      .cls-3 {
+        stroke-width: .25px;
+      }
+
+      .cls-11 {
+        clip-path: url(#clippath);
+      }
+    </style>
+    <clipPath id="clippath">
+      <polygon class="cls-1" points="19.99 20.68 35.07 8.25 50.54 20.81 50.54 39.5 20.12 39.5 19.99 20.68"/>
+    </clipPath>
+  </defs>
+  <g id="logotext">
+    <text class="cls-5" transform="translate(59.16 34.25)"><tspan class="cls-10" x="0" y="0">Mexico</tspan><tspan class="cls-7" x="80.57" y="0">Home</tspan><tspan class="cls-10" x="147.36" y="0">Finder</tspan></text>
+    <g class="cls-11">
+      <rect class="cls-6" x="19.99" y="8.76" width="10.34" height="30.74"/>
+      <rect class="cls-8" x="30.33" y="8.76" width="10.34" height="30.74"/>
+      <rect class="cls-9" x="40.67" y="8.76" width="9.87" height="30.74"/>
+    </g>
+    <polygon class="cls-2" points="19.99 20.68 35.07 8.25 50.54 20.81 50.54 39.5 20.12 39.5 19.99 20.68"/>
+    <circle class="cls-3" cx="282.46" cy="21.86" r="2.86"/>
+    <text class="cls-4" transform="translate(281.29 23.14)"><tspan x="0" y="0">R</tspan></text>
+  </g>
+</svg>

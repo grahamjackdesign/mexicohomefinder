@@ -1,0 +1,19 @@
+# MexicoHomeFinder robots.txt
+# Allow all bots to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow private/admin areas
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /list-property/login
+Disallow: /list-property/signup
+
+# Allow property listing pages
+Allow: /properties
+Allow: /properties/*
+
+# Sitemap location
+Sitemap: https://mexicohomefinder.com/sitemap.xml
