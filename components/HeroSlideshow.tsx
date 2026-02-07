@@ -13,106 +13,191 @@ const HERO_IMAGES = [
   '/images/hero/luxury-5.jpg',
 ];
 
-// Different Ken Burns pan/zoom directions for each slide
-const KB_DIRECTIONS: Record<number, { from: string; to: string }> = {
-  0: { from: 'scale(1) translate(0%, 0%)',      to: 'scale(1.15) translate(-3%, -3%)' },
-  1: { from: 'scale(1.15) translate(-3%, 3%)',   to: 'scale(1) translate(0%, 0%)' },
-  2: { from: 'scale(1) translate(0%, 0%)',       to: 'scale(1.12) translate(3%, -2%)' },
-  3: { from: 'scale(1.1) translate(2%, 2%)',     to: 'scale(1) translate(-1%, 0%)' },
-  4: { from: 'scale(1) translate(-2%, 0%)',      to: 'scale(1.15) translate(2%, -3%)' },
-};
+// Each slide gets a unique Ken Burns direction
+const KB_DIRECTIONS = [
+  { startTransform: 'scale(1) translate(0%, 0%)',       endTransform: 'scale(1.15) translate(-3%, -3%)' },
+  { startTransform: 'scale(1.12) translate(-2%, 2%)',   endTransform: 'scale(1) translate(1%, -1%)' },
+  { startTransform: 'scale(1) translate(0%, 0%)',       endTransform: 'scale(1.12) translate(3%, -2%)' },
+  { startTransform: 'scale(1.1) translate(2%, 2%)',     endTransform: 'scale(1) translate(-1%, 0%)' },
+  { startTransform: 'scale(1) translate(-2%, 0%)',      endTransform: 'scale(1.15) translate(2%, -3%)' },
+];
+
+const SLIDE_DURATION = 6000;  // Time each slide is shown
+const FADE_DURATION = 2000;   // Crossfade duration in ms
+const KB_DURATION = 10000;    // Ken Burns pan duration in ms
 
 export default function HeroSlideshow() {
-  // Two-layer crossfade: back layer stays visible, front layer fades in on top
-  const [backSlide, setBackSlide] = useState(0);
-  const [frontSlide, setFrontSlide] = useState(0);
-  const [frontOpacity, setFrontOpacity] = useState(1);
-  // Counter forces unique React keys so animations always restart fresh
-  const [transitionCount, setTransitionCount] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  // Each slide gets its own opacity and transform, managed independently
+  const [slides, setSlides] = useState(() =>
+    HERO_IMAGES.map((_, i) => ({
+      opacity: i === 0 ? 1 : 0,
+      transform: KB_DIRECTIONS[i].startTransform,
+      zIndex: i === 0 ? 2 : 1,
+      // Ken Burns: transition the transform over KB_DURATION
+      transitioning: i === 0,
+    }))
+  );
+
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const currentRef = useRef(0);
+  const activeRef = useRef(0);
 
-  const advance = useCallback((to?: number) => {
-    const next = to !== undefined ? to : (currentRef.current + 1) % HERO_IMAGES.length;
-    if (next === currentRef.current) return;
+  const goTo = useCallback((nextIndex: number) => {
+    if (nextIndex === activeRef.current) return;
+    const prevIndex = activeRef.current;
+    activeRef.current = nextIndex;
+    setActiveIndex(nextIndex);
 
-    // Move current front to back, set new front transparent, then fade in
-    setBackSlide(currentRef.current);
-    setFrontSlide(next);
-    setFrontOpacity(0);
-    setTransitionCount((c) => c + 1);
+    setSlides((prev) =>
+      prev.map((slide, i) => {
+        if (i === nextIndex) {
+          // Incoming slide: reset transform to start, then we'll kick off Ken Burns
+          return {
+            opacity: 0,
+            transform: KB_DIRECTIONS[i].startTransform,
+            zIndex: 3, // On top during fade
+            transitioning: false,
+          };
+        }
+        if (i === prevIndex) {
+          // Outgoing slide: keep its current state, just ensure it's behind
+          return { ...slide, zIndex: 2 };
+        }
+        // All others: hidden
+        return { ...slide, opacity: 0, zIndex: 1 };
+      })
+    );
 
-    // Double rAF ensures the browser registers opacity:0 before transitioning to 1
+    // After a frame, start the fade-in AND Ken Burns on the new slide
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        setFrontOpacity(1);
+        setSlides((prev) =>
+          prev.map((slide, i) => {
+            if (i === nextIndex) {
+              return {
+                opacity: 1,
+                transform: KB_DIRECTIONS[i].endTransform,
+                zIndex: 3,
+                transitioning: true,
+              };
+            }
+            return slide;
+          })
+        );
       });
     });
 
-    currentRef.current = next;
+    // After fade completes, clean up the old slide
+    setTimeout(() => {
+      setSlides((prev) =>
+        prev.map((slide, i) => {
+          if (i === prevIndex) {
+            return {
+              opacity: 0,
+              transform: KB_DIRECTIONS[i].startTransform,
+              zIndex: 1,
+              transitioning: false,
+            };
+          }
+          if (i === nextIndex) {
+            return { ...slide, zIndex: 2 };
+          }
+          return slide;
+        })
+      );
+    }, FADE_DURATION + 100);
   }, []);
 
+  // Start Ken Burns on the first slide immediately
   useEffect(() => {
-    intervalRef.current = setInterval(() => advance(), 6000);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setSlides((prev) =>
+          prev.map((slide, i) => {
+            if (i === 0) {
+              return {
+                ...slide,
+                transform: KB_DIRECTIONS[0].endTransform,
+                transitioning: true,
+              };
+            }
+            return slide;
+          })
+        );
+      });
+    });
+  }, []);
+
+  // Auto-advance
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      const next = (activeRef.current + 1) % HERO_IMAGES.length;
+      goTo(next);
+    }, SLIDE_DURATION);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [advance]);
+  }, [goTo]);
 
   const handleIndicatorClick = (index: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    advance(index);
-    intervalRef.current = setInterval(() => advance(), 6000);
-  };
-
-  const renderSlide = (slideIndex: number, animKey: string) => {
-    const dir = KB_DIRECTIONS[slideIndex % HERO_IMAGES.length];
-    return (
-      <div className="absolute inset-0" style={{ overflow: 'hidden' }}>
-        <div
-          key={animKey}
-          className="absolute inset-0 kb-animate"
-          style={{
-            '--kb-from': dir.from,
-            '--kb-to': dir.to,
-          } as React.CSSProperties}
-        >
-          <Image
-            src={HERO_IMAGES[slideIndex]}
-            alt={`Luxury Mexican property ${slideIndex + 1}`}
-            fill
-            className="object-cover"
-            priority={slideIndex === 0}
-            quality={90}
-          />
-        </div>
-      </div>
-    );
+    goTo(index);
+    intervalRef.current = setInterval(() => {
+      const next = (activeRef.current + 1) % HERO_IMAGES.length;
+      goTo(next);
+    }, SLIDE_DURATION);
   };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background Slideshow – two-layer crossfade */}
+      {/* Background Slideshow */}
       <div className="absolute inset-0 w-full h-full">
-        {/* Back layer (previous slide) – always fully opaque */}
-        <div className="absolute inset-0" style={{ zIndex: 1 }}>
-          {renderSlide(backSlide, `back-${backSlide}-${transitionCount}`)}
-        </div>
-
-        {/* Front layer (current slide) – fades in over the back */}
-        <div
-          className="absolute inset-0"
-          style={{
-            zIndex: 2,
-            opacity: frontOpacity,
-            transition: 'opacity 2000ms ease-in-out',
-          }}
-        >
-          {renderSlide(frontSlide, `front-${frontSlide}-${transitionCount}`)}
-        </div>
+        {HERO_IMAGES.map((image, index) => {
+          const slide = slides[index];
+          return (
+            <div
+              key={image}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: slide.opacity,
+                zIndex: slide.zIndex,
+                transition: `opacity ${FADE_DURATION}ms ease-in-out`,
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  transform: slide.transform,
+                  transition: slide.transitioning
+                    ? `transform ${KB_DURATION}ms ease-out`
+                    : 'none',
+                }}
+              >
+                <Image
+                  src={image}
+                  alt={`Luxury Mexican property ${index + 1}`}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority={index === 0}
+                  quality={90}
+                />
+              </div>
+            </div>
+          );
+        })}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 z-[3] bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 5,
+            background: 'linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.3))',
+          }}
+        />
       </div>
 
       {/* Content */}
@@ -120,10 +205,11 @@ export default function HeroSlideshow() {
         <div className="max-w-3xl">
           {/* Badge */}
           <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 animate-fade-in-up backdrop-blur-md"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 hero-fade-in backdrop-blur-md"
             style={{
               backgroundColor: 'rgba(232, 238, 244, 0.9)',
               color: '#2C4563',
+              animationDelay: '0s',
             }}
           >
             <span className="text-sm font-semibold uppercase tracking-wide">
@@ -132,20 +218,29 @@ export default function HeroSlideshow() {
           </div>
 
           {/* Headline */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in-up animate-delay-100 text-white drop-shadow-2xl">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 hero-fade-in text-white drop-shadow-2xl"
+            style={{ animationDelay: '0.1s' }}
+          >
             Find Your Dream Home in{' '}
             <span style={{ color: '#C85A3E' }}>Mexico</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-lg sm:text-xl text-white/90 mb-10 max-w-2xl animate-fade-in-up animate-delay-200 drop-shadow-lg">
+          <p
+            className="text-lg sm:text-xl text-white/90 mb-10 max-w-2xl hero-fade-in drop-shadow-lg"
+            style={{ animationDelay: '0.2s' }}
+          >
             The trusted platform connecting American buyers with verified
             Mexican real estate agents. From beachfront condos to colonial
             homes, find your perfect property with expert guidance.
           </p>
 
           {/* Search Box */}
-          <div className="bg-white rounded-2xl p-2 shadow-2xl animate-fade-in-up animate-delay-300 backdrop-blur-sm">
+          <div
+            className="bg-white rounded-2xl p-2 shadow-2xl hero-fade-in backdrop-blur-sm"
+            style={{ animationDelay: '0.3s' }}
+          >
             <SearchAutocomplete
               variant="hero"
               placeholder="Search by city, state, or neighborhood..."
@@ -153,7 +248,10 @@ export default function HeroSlideshow() {
           </div>
 
           {/* Quick Stats */}
-          <div className="mt-8 flex flex-wrap gap-6 animate-fade-in-up animate-delay-400">
+          <div
+            className="mt-8 flex flex-wrap gap-6 hero-fade-in"
+            style={{ animationDelay: '0.4s' }}
+          >
             <div className="flex items-center gap-2 bg-black/30 px-4 py-2 rounded-full backdrop-blur-md">
               <Home className="w-5 h-5" style={{ color: '#C85A3E' }} />
               <span className="text-sm font-semibold text-white">
@@ -183,7 +281,7 @@ export default function HeroSlideshow() {
             key={index}
             onClick={() => handleIndicatorClick(index)}
             className={`h-1.5 rounded-full transition-all ${
-              index === currentRef.current
+              index === activeIndex
                 ? 'w-8 bg-white'
                 : 'w-1.5 bg-white/50 hover:bg-white/75'
             }`}
@@ -201,21 +299,9 @@ export default function HeroSlideshow() {
         }}
       />
 
-      <style jsx>{`
-        @keyframes kenBurns {
-          0% {
-            transform: var(--kb-from);
-          }
-          100% {
-            transform: var(--kb-to);
-          }
-        }
-
-        .kb-animate {
-          animation: kenBurns 10s ease-out forwards;
-        }
-
-        @keyframes fadeInUp {
+      {/* Minimal global styles - only for the page-load fade-in animation */}
+      <style jsx global>{`
+        @keyframes heroFadeInUp {
           from {
             opacity: 0;
             transform: translateY(30px);
@@ -225,15 +311,10 @@ export default function HeroSlideshow() {
             transform: translateY(0);
           }
         }
-
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
+        .hero-fade-in {
+          animation: heroFadeInUp 0.8s ease-out forwards;
           opacity: 0;
         }
-        .animate-delay-100 { animation-delay: 0.1s; }
-        .animate-delay-200 { animation-delay: 0.2s; }
-        .animate-delay-300 { animation-delay: 0.3s; }
-        .animate-delay-400 { animation-delay: 0.4s; }
       `}</style>
     </section>
   );
