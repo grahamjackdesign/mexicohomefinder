@@ -62,12 +62,13 @@ const SECONDARY_LOCATIONS = [
 ];
 
 export default async function HomePage() {
-  // Fetch featured properties
+  // Fetch featured properties (only approved for MHF)
   const { data: featuredProperties } = await supabaseServer
     .from('properties')
     .select('*')
     .eq('status', 'active')
     .eq('featured', true)
+    .eq('show_on_mhf', true)
     .limit(4);
 
   return (

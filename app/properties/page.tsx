@@ -31,22 +31,24 @@ export const metadata = {
 };
 
 async function getAvailableLocations() {
-  // Get unique states
+  // Get unique states (only from MHF-approved properties)
   const { data: statesData } = await supabaseServer
     .from('properties')
     .select('state')
     .eq('status', 'active')
+    .eq('show_on_mhf', true)
     .not('state', 'is', null);
 
   const states = Array.from(
     new Set(statesData?.map((p) => p.state).filter(Boolean) || [])
   ).sort() as string[];
 
-  // Get unique state/municipality combinations
+  // Get unique state/municipality combinations (only from MHF-approved properties)
   const { data: municipalitiesData } = await supabaseServer
     .from('properties')
     .select('state, municipality')
     .eq('status', 'active')
+    .eq('show_on_mhf', true)
     .not('state', 'is', null)
     .not('municipality', 'is', null);
 
@@ -78,6 +80,7 @@ async function getProperties(searchParams: SearchParams) {
     .from('properties')
     .select('*', { count: 'exact' })
     .eq('status', 'active')
+    .eq('show_on_mhf', true)
     .order('featured', { ascending: false })
     .order('created_at', { ascending: false });
 
