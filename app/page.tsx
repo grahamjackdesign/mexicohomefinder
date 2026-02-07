@@ -5,8 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import HeroSlideshow from '@/components/HeroSlideshow';
 import PropertyCard from '@/components/PropertyCard';
-import SearchAutocomplete from '@/components/SearchAutocomplete';
 import ContactForm from '@/components/ContactForm';
 import { supabaseServer } from '@/lib/supabase';
 import { MapPin, Shield, Users, TrendingUp, Star, Home, ArrowRight } from 'lucide-react';
@@ -81,72 +81,8 @@ export default async function HomePage() {
     <>
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative pt-24 sm:pt-32 pb-20 overflow-hidden" style={{ backgroundColor: '#F5F1E8' }}>
-        {/* Decorative Element */}
-        <div className="absolute top-0 right-0 w-1/2 h-full opacity-5">
-          <div className="absolute inset-0" style={{ 
-            backgroundImage: 'radial-gradient(circle at 2px 2px, #2C4563 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }} />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6 animate-fade-in-up" 
-                 style={{ backgroundColor: '#E8EEF4', color: '#2C4563' }}>
-              <span className="text-sm font-semibold uppercase tracking-wide">
-                🇺🇸 Built for American & Canadian Buyers
-              </span>
-            </div>
-
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in-up animate-delay-100" 
-                style={{ color: '#2C4563' }}>
-              Find Your Dream Home in{' '}
-              <span style={{ color: '#C85A3E' }}>Mexico</span>
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-lg sm:text-xl mb-10 max-w-2xl animate-fade-in-up animate-delay-200" 
-               style={{ color: '#2C4563', opacity: 0.8 }}>
-              The trusted platform connecting American buyers with verified Mexican real estate agents. 
-              From beachfront condos to colonial homes, find your perfect property with expert guidance.
-            </p>
-
-            {/* Search Box */}
-            <div className="bg-white rounded-2xl p-2 shadow-xl animate-fade-in-up animate-delay-300">
-              <SearchAutocomplete 
-                variant="hero"
-                placeholder="Search by city, state, or neighborhood..."
-              />
-            </div>
-
-            {/* Quick Stats */}
-            <div className="mt-8 flex flex-wrap gap-6 animate-fade-in-up animate-delay-400">
-              <div className="flex items-center gap-2">
-                <Home className="w-5 h-5" style={{ color: '#C85A3E' }} />
-                <span className="text-sm font-semibold" style={{ color: '#2C4563' }}>
-                  1,000+ Curated Listings
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" style={{ color: '#C85A3E' }} />
-                <span className="text-sm font-semibold" style={{ color: '#2C4563' }}>
-                  100% Verified Agents
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" style={{ color: '#C85A3E' }} />
-                <span className="text-sm font-semibold" style={{ color: '#2C4563' }}>
-                  12+ Prime Regions
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section - Slideshow with Ken Burns Effect */}
+      <HeroSlideshow />
 
       {/* Featured Properties */}
       {featuredProperties && featuredProperties.length > 0 && (
