@@ -97,20 +97,20 @@ export default async function HomePage() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/30 rounded-full mb-6 animate-fade-in-up backdrop-blur-sm">
               <span className="text-sm font-semibold text-white uppercase tracking-wide">
-                Your Gateway to Mexico
+                Trusted by American & Canadian Buyers
               </span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-white mb-6 animate-fade-in-up animate-delay-100">
-              Find your dream home{' '}
-              <span className="text-secondary">in Mexico</span>
+              Your dream home in Mexico{' '}
+              <span className="text-secondary">starts here</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-lg text-gray-300 mb-10 max-w-lg animate-fade-in-up animate-delay-200">
-              Discover beautiful properties across Mexico's most desirable
-              locations. From colonial gems to beachfront villas.
+              The premier property portal for Americans and Canadians. Curated listings, 
+              verified agents, and expert guidance for buying in Mexico with confidence.
             </p>
 
             {/* Search Box */}
@@ -135,14 +135,21 @@ export default async function HomePage() {
       )}
 
       {/* Browse Locations Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-gray-50" id="locations">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative" id="locations" style={{
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        backgroundImage: `
+          linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+          repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+          repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+        `
+      }}>
         <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-4">
-            Browse homes in <span className="text-secondary">popular locations</span>
+          <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
+            Discover Mexico's <span className="text-secondary">top destinations</span>
           </h2>
-          <p className="text-lg text-gray-500 max-w-xl mx-auto">
-            From charming colonial towns to stunning beach communities, find
-            your perfect spot in Mexico.
+          <p className="text-lg text-gray-300 max-w-xl mx-auto">
+            From charming colonial towns to pristine beaches—explore the regions 
+            where expats are building their new lives.
           </p>
         </div>
 
@@ -211,38 +218,38 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-6">
-                Trusted by thousands,{' '}
-                <span className="text-secondary italic">driven by experience</span>
+                Built for international buyers,{' '}
+                <span className="text-secondary italic">trusted by experts</span>
               </h2>
               <p className="text-gray-300 text-lg mb-4 leading-relaxed">
-                MexicoHomeFinder connects international buyers with Mexico's
-                most trusted real estate professionals. We understand the unique
-                needs of expats and foreign buyers.
+                We understand buying property in a foreign country is a big decision. 
+                That's why every listing on MexicoHomeFinder is curated and every agent 
+                is verified to serve American and Canadian buyers.
               </p>
               <p className="text-gray-300 text-lg leading-relaxed">
-                From understanding fideicomiso trusts to navigating local
-                regulations, our network of agents provides the expertise you
-                need for a smooth buying experience.
+                From navigating fideicomiso trusts to understanding closing costs, 
+                our network provides the bilingual expertise and local knowledge you 
+                need for a smooth transaction.
               </p>
 
               <div className="flex gap-12 mt-10">
                 <div>
                   <div className="text-4xl sm:text-5xl font-display font-bold text-secondary">
-                    2,500+
+                    1,000+
                   </div>
-                  <div className="text-gray-400 mt-1">Properties Listed</div>
+                  <div className="text-gray-400 mt-1">Curated Listings</div>
                 </div>
                 <div>
                   <div className="text-4xl sm:text-5xl font-display font-bold text-secondary">
-                    150+
+                    100%
                   </div>
-                  <div className="text-gray-400 mt-1">Trusted Agents</div>
+                  <div className="text-gray-400 mt-1">Verified Agents</div>
                 </div>
                 <div>
                   <div className="text-4xl sm:text-5xl font-display font-bold text-secondary">
-                    12
+                    12+
                   </div>
-                  <div className="text-gray-400 mt-1">Regions</div>
+                  <div className="text-gray-400 mt-1">Prime Regions</div>
                 </div>
               </div>
             </div>
@@ -328,14 +335,22 @@ export default async function HomePage() {
       </section> */}
 
       {/* Contact Form Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white" id="contact-form">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative" id="contact-form" style={{
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        backgroundImage: `
+          linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+          repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+          repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+        `
+      }}>
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-4">
-              Get in Touch
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
+              Questions? We're Here to Help
             </h2>
-            <p className="text-lg text-gray-600">
-              Have questions about buying property in Mexico? We're here to help.
+            <p className="text-lg text-gray-300">
+              Our team understands the unique challenges of buying property as a foreigner. 
+              Let's discuss how we can help you find your perfect home in Mexico.
             </p>
           </div>
 
@@ -347,17 +362,17 @@ export default async function HomePage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-secondary to-secondary-dark" id="contact">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
-            Are you a real estate agent?
+            Real Estate Agent in Mexico?
           </h2>
           <p className="text-lg text-white/85 mb-8 max-w-xl mx-auto">
-            List your properties on MexicoHomeFinder and connect with qualified
-            international buyers actively searching for homes in Mexico.
+            Join MexicoHomeFinder and connect with serious American & Canadian buyers. 
+            Get your listings in front of qualified international clients with real budgets.
           </p>
           <Link
             href="https://brokerlink.mx/comenzar"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-primary font-semibold rounded-xl hover:shadow-lg transition-shadow"
           >
-            Get Started Free
+            List Your Properties Free
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>

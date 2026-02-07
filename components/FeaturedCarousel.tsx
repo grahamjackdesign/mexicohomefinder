@@ -31,13 +31,20 @@ export default function FeaturedCarousel({ properties }: Props) {
         }
       `}</style>
 
-      <section className="relative -mt-8 pt-4 pb-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="relative -mt-8 pt-4 pb-20 px-4 sm:px-6 lg:px-8" style={{
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        backgroundImage: `
+          linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+          repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+          repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+        `
+      }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-4">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
               Featured <span className="text-secondary">properties</span>
             </h2>
-            <p className="text-lg text-gray-500 max-w-xl mx-auto">
+            <p className="text-lg text-gray-300 max-w-xl mx-auto">
               Handpicked homes from our most trusted agents
             </p>
           </div>
