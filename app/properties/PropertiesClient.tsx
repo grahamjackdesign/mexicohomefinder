@@ -45,6 +45,7 @@ type Props = {
 };
 
 const LISTING_TYPES = [
+  { value: '', label: 'All for Sale and Rent' },
   { value: 'sale', label: 'For Sale' },
   { value: 'rent', label: 'For Rent' },
 ];
@@ -138,7 +139,7 @@ export default function PropertiesClient({
   // Filter state
   const [selectedState, setSelectedState] = useState(searchParams.state || '');
   const [selectedMunicipality, setSelectedMunicipality] = useState(searchParams.municipality || '');
-  const [listingType, setListingType] = useState(searchParams.listingType || 'rent');
+  const [listingType, setListingType] = useState(searchParams.listingType || '');
   const [propertyType, setPropertyType] = useState(searchParams.type || '');
   const [priceRange, setPriceRange] = useState(() => {
     if (searchParams.minPrice && searchParams.maxPrice) {
@@ -363,7 +364,7 @@ export default function PropertiesClient({
     setHasPool(false);
     setHasAC(false);
     setPetsAllowed(false);
-    window.location.href = `/properties?displayCurrency=${displayCurrency}&listingType=rent`;
+    window.location.href = `/properties?displayCurrency=${displayCurrency}`;
   }, [displayCurrency]);
 
   const activeFilterCount = [
@@ -395,7 +396,10 @@ export default function PropertiesClient({
           {/* Top Row: Filters */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Currency Toggle */}
-            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+            <div 
+              className="flex items-center bg-gray-100 rounded-lg p-0.5 relative group"
+              title="Currency conversions are updated daily"
+            >
               <button
                 onClick={() => handleCurrencyChange('USD')}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
@@ -416,6 +420,11 @@ export default function PropertiesClient({
               >
                 MXN
               </button>
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                Currency conversions are updated daily
+                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+              </div>
             </div>
 
             {/* State Dropdown */}
@@ -451,7 +460,7 @@ export default function PropertiesClient({
             <select
               value={listingType}
               onChange={(e) => handleListingTypeChange(e.target.value)}
-              className="py-2 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 bg-white"
+              className="py-2 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 bg-white min-w-[180px]"
             >
               {LISTING_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
