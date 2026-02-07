@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import SearchAutocomplete from '@/components/SearchAutocomplete';
 import { Home, Shield, MapPin } from 'lucide-react';
@@ -13,100 +13,103 @@ const HERO_IMAGES = [
   '/images/hero/luxury-5.jpg',
 ];
 
-// Different Ken Burns directions for variety
-const KB_DIRECTIONS = [
-  { from: 'scale(1) translate(0, 0)',       to: 'scale(1.15) translate(-3%, -3%)' },   // zoom + drift top-left
-  { from: 'scale(1.15) translate(-3%, 3%)', to: 'scale(1) translate(0, 0)' },          // zoom out from bottom-left
-  { from: 'scale(1) translate(0, 0)',       to: 'scale(1.12) translate(3%, -2%)' },    // zoom + drift top-right
-  { from: 'scale(1.1) translate(2%, 2%)',   to: 'scale(1) translate(-1%, 0)' },        // zoom out from bottom-right
-  { from: 'scale(1) translate(-2%, 0)',     to: 'scale(1.15) translate(2%, -3%)' },    // pan left-to-right + zoom
-];
+// Different Ken Burns pan/zoom directions for each slide
+const KB_DIRECTIONS: Record<number, { from: string; to: string }> = {
+  0: { from: 'scale(1) translate(0%, 0%)',      to: 'scale(1.15) translate(-3%, -3%)' },
+  1: { from: 'scale(1.15) translate(-3%, 3%)',   to: 'scale(1) translate(0%, 0%)' },
+  2: { from: 'scale(1) translate(0%, 0%)',       to: 'scale(1.12) translate(3%, -2%)' },
+  3: { from: 'scale(1.1) translate(2%, 2%)',     to: 'scale(1) translate(-1%, 0%)' },
+  4: { from: 'scale(1) translate(-2%, 0%)',      to: 'scale(1.15) translate(2%, -3%)' },
+};
 
 export default function HeroSlideshow() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Two-layer crossfade: back layer stays visible, front layer fades in on top
+  const [backSlide, setBackSlide] = useState(0);
+  const [frontSlide, setFrontSlide] = useState(0);
+  const [frontOpacity, setFrontOpacity] = useState(1);
+  // Counter forces unique React keys so animations always restart fresh
+  const [transitionCount, setTransitionCount] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentRef = useRef(0);
 
-  const goToSlide = (nextIndex: number) => {
-    if (nextIndex === currentIndex || isTransitioning) return;
-    setIsTransitioning(true);
-    setPrevIndex(currentIndex);
-    setCurrentIndex(nextIndex);
+  const advance = useCallback((to?: number) => {
+    const next = to !== undefined ? to : (currentRef.current + 1) % HERO_IMAGES.length;
+    if (next === currentRef.current) return;
 
-    // Clear transition lock after the crossfade completes
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      setPrevIndex(null);
-      setIsTransitioning(false);
-    }, 2000);
-  };
+    // Move current front to back, set new front transparent, then fade in
+    setBackSlide(currentRef.current);
+    setFrontSlide(next);
+    setFrontOpacity(0);
+    setTransitionCount((c) => c + 1);
+
+    // Double rAF ensures the browser registers opacity:0 before transitioning to 1
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setFrontOpacity(1);
+      });
+    });
+
+    currentRef.current = next;
+  }, []);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const next = (prev + 1) % HERO_IMAGES.length;
-        setPrevIndex(prev);
-        setIsTransitioning(true);
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-          setPrevIndex(null);
-          setIsTransitioning(false);
-        }, 2000);
-        return next;
-      });
-    }, 6000);
-
+    intervalRef.current = setInterval(() => advance(), 6000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, []);
+  }, [advance]);
+
+  const handleIndicatorClick = (index: number) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    advance(index);
+    intervalRef.current = setInterval(() => advance(), 6000);
+  };
+
+  const renderSlide = (slideIndex: number, animKey: string) => {
+    const dir = KB_DIRECTIONS[slideIndex % HERO_IMAGES.length];
+    return (
+      <div className="absolute inset-0" style={{ overflow: 'hidden' }}>
+        <div
+          key={animKey}
+          className="absolute inset-0 kb-animate"
+          style={{
+            '--kb-from': dir.from,
+            '--kb-to': dir.to,
+          } as React.CSSProperties}
+        >
+          <Image
+            src={HERO_IMAGES[slideIndex]}
+            alt={`Luxury Mexican property ${slideIndex + 1}`}
+            fill
+            className="object-cover"
+            priority={slideIndex === 0}
+            quality={90}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background Slideshow */}
+      {/* Background Slideshow – two-layer crossfade */}
       <div className="absolute inset-0 w-full h-full">
-        {HERO_IMAGES.map((image, index) => {
-          const isActive = index === currentIndex;
-          const isPrev = index === prevIndex;
-          const isVisible = isActive || isPrev;
-          const dir = KB_DIRECTIONS[index % KB_DIRECTIONS.length];
+        {/* Back layer (previous slide) – always fully opaque */}
+        <div className="absolute inset-0" style={{ zIndex: 1 }}>
+          {renderSlide(backSlide, `back-${backSlide}-${transitionCount}`)}
+        </div>
 
-          return (
-            <div
-              key={image}
-              className="absolute inset-0"
-              style={{
-                opacity: isActive ? 1 : isPrev ? 1 : 0,
-                // Active slide fades in on top; previous slide sits behind
-                zIndex: isActive ? 2 : isPrev ? 1 : 0,
-                transition: 'opacity 2000ms ease-in-out',
-              }}
-            >
-              <div
-                className="absolute inset-0"
-                style={
-                  isVisible
-                    ? {
-                        animation: `kb-${index} 10s ease-out forwards`,
-                      }
-                    : { transform: dir.from }
-                }
-              >
-                <Image
-                  src={image}
-                  alt={`Luxury Mexican property ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  priority={index === 0}
-                  quality={90}
-                />
-              </div>
-            </div>
-          );
-        })}
+        {/* Front layer (current slide) – fades in over the back */}
+        <div
+          className="absolute inset-0"
+          style={{
+            zIndex: 2,
+            opacity: frontOpacity,
+            transition: 'opacity 2000ms ease-in-out',
+          }}
+        >
+          {renderSlide(frontSlide, `front-${frontSlide}-${transitionCount}`)}
+        </div>
 
         {/* Gradient Overlay */}
         <div className="absolute inset-0 z-[3] bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
@@ -178,9 +181,9 @@ export default function HeroSlideshow() {
         {HERO_IMAGES.map((_, index) => (
           <button
             key={index}
-            onClick={() => goToSlide(index)}
+            onClick={() => handleIndicatorClick(index)}
             className={`h-1.5 rounded-full transition-all ${
-              index === currentIndex
+              index === currentRef.current
                 ? 'w-8 bg-white'
                 : 'w-1.5 bg-white/50 hover:bg-white/75'
             }`}
@@ -199,15 +202,18 @@ export default function HeroSlideshow() {
       />
 
       <style jsx>{`
-        ${HERO_IMAGES.map((_, i) => {
-          const dir = KB_DIRECTIONS[i % KB_DIRECTIONS.length];
-          return `
-            @keyframes kb-${i} {
-              0%   { transform: ${dir.from}; }
-              100% { transform: ${dir.to}; }
-            }
-          `;
-        }).join('')}
+        @keyframes kenBurns {
+          0% {
+            transform: var(--kb-from);
+          }
+          100% {
+            transform: var(--kb-to);
+          }
+        }
+
+        .kb-animate {
+          animation: kenBurns 10s ease-out forwards;
+        }
 
         @keyframes fadeInUp {
           from {
