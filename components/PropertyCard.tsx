@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Bed, Bath, Square, MapPin } from 'lucide-react';
+import { Bed, Bath, Square, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Property } from '@/lib/supabase';
 import NewListingBadge from './NewListingBadge';
 import { useCurrencyConversion } from '@/hooks/useCurrencyConversion';
@@ -15,6 +16,9 @@ interface PropertyCardProps {
 
 export default function PropertyCard({ property, onHover, displayCurrency = 'USD' }: PropertyCardProps) {
   const { convertPrice } = useCurrencyConversion();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const images = property.images || [];
+  const hasMultipleImages = images.length > 1;
   
   const formatPrice = (price: number, propertyCurrency?: string) => {
     // Determine what currency the price is stored in
@@ -34,6 +38,21 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
     return `$${formattedNumber} ${currencyLabel}${suffix}`;
   };
 
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleDotClick = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    setCurrentImageIndex(index);
+  };
+
   return (
     <Link
       href={`/properties/${property.id}`}
@@ -41,16 +60,54 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
       onMouseEnter={() => onHover?.(property)}
       onMouseLeave={() => onHover?.(null)}
     >
-      {/* Image Container */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-        {property.images?.[0] ? (
-          <Image
-            src={property.images[0]}
-            alt={property.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+      {/* Image Container with Carousel */}
+      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 group/carousel">
+        {images.length > 0 ? (
+          <>
+            <Image
+              src={images[currentImageIndex]}
+              alt={property.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+
+            {/* Navigation Arrows - Only show if multiple images */}
+            {hasMultipleImages && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+
+                {/* Dot Indicators */}
+                <div className="absolute bottom-3 right-3 flex gap-1 z-10">
+                  {images.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => handleDotClick(e, index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentImageIndex
+                          ? 'bg-white w-6'
+                          : 'bg-white/60 hover:bg-white/80'
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </>
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
             <MapPin className="w-12 h-12" />
