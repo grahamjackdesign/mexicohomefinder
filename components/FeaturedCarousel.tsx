@@ -23,7 +23,7 @@ export default function FeaturedCarousel({ properties }: Props) {
         }
 
         .animate-scroll {
-          animation: scroll 40s linear infinite;
+          animation: scroll 20s linear infinite;
         }
 
         .animate-scroll:hover {
