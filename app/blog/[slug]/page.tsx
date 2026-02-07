@@ -206,10 +206,44 @@ export default async function BlogPostPage({
               )}
 
               {/* Main Content */}
-              <div className="prose prose-lg max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-primary prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6">
+              <div className="prose prose-lg max-w-none 
+                prose-headings:font-display prose-headings:font-bold prose-headings:text-primary 
+                prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 
+                prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4
+                prose-h4:text-xl prose-h4:mt-6 prose-h4:mb-3
+                prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-6 
+                prose-ul:my-6 prose-ul:space-y-2
+                prose-ol:my-6 prose-ol:space-y-2
+                prose-li:text-gray-700 prose-li:leading-relaxed
+                prose-strong:text-gray-900 prose-strong:font-bold
+                prose-em:text-gray-700
+                prose-blockquote:border-l-4 prose-blockquote:border-secondary prose-blockquote:pl-4 prose-blockquote:italic
+              ">
                 <PortableText 
                   value={post.body}
                   components={{
+                    block: {
+                      // Headings
+                      h2: ({children}) => <h2 className="text-3xl font-bold text-primary mt-12 mb-6">{children}</h2>,
+                      h3: ({children}) => <h3 className="text-2xl font-bold text-primary mt-8 mb-4">{children}</h3>,
+                      h4: ({children}) => <h4 className="text-xl font-bold text-primary mt-6 mb-3">{children}</h4>,
+                      // Paragraphs
+                      normal: ({children}) => <p className="text-gray-700 leading-relaxed mb-6">{children}</p>,
+                      // Blockquotes
+                      blockquote: ({children}) => (
+                        <blockquote className="border-l-4 border-secondary pl-6 my-6 italic text-gray-600">
+                          {children}
+                        </blockquote>
+                      ),
+                    },
+                    list: {
+                      bullet: ({children}) => <ul className="list-disc list-outside ml-6 my-6 space-y-2">{children}</ul>,
+                      number: ({children}) => <ol className="list-decimal list-outside ml-6 my-6 space-y-2">{children}</ol>,
+                    },
+                    listItem: {
+                      bullet: ({children}) => <li className="text-gray-700 leading-relaxed pl-2">{children}</li>,
+                      number: ({children}) => <li className="text-gray-700 leading-relaxed pl-2">{children}</li>,
+                    },
                     types: {
                       image: ({value}) => (
                         <div className="relative w-full h-96 my-8 rounded-lg overflow-hidden">
@@ -223,6 +257,8 @@ export default async function BlogPostPage({
                       ),
                     },
                     marks: {
+                      strong: ({children}) => <strong className="font-bold text-gray-900">{children}</strong>,
+                      em: ({children}) => <em className="italic">{children}</em>,
                       link: ({children, value}) => {
                         const rel = !value.href.startsWith('/') ? 'noreferrer noopener' : undefined
                         return (
