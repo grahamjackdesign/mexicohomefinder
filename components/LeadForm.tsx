@@ -18,11 +18,26 @@ export default function LeadForm({ property }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState('');
+
+  // Email validation function
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
+    setEmailError('');
+
+    // Validate email before submitting
+    if (!validateEmail(formData.email)) {
+      setEmailError('Please enter a valid email address');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/leads', {
@@ -121,12 +136,25 @@ export default function LeadForm({ property }: Props) {
             id="email"
             required
             value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
+            onChange={(e) => {
+              setFormData({ ...formData, email: e.target.value });
+              // Clear error when typing
+              if (emailError) setEmailError('');
+            }}
+            onBlur={() => {
+              // Validate on blur
+              if (formData.email && !validateEmail(formData.email)) {
+                setEmailError('Please enter a valid email address');
+              }
+            }}
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary ${
+              emailError ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="john@example.com"
           />
+          {emailError && (
+            <p className="text-red-600 text-sm mt-1">{emailError}</p>
+          )}
         </div>
 
         <div>
