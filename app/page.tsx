@@ -225,6 +225,7 @@ export default async function HomePage() {
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div> */}
+        </div>
       </section>
 
       {/* Trust Section */}
