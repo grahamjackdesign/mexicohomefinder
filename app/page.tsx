@@ -162,7 +162,7 @@ export default async function HomePage() {
                   {location.name}
                 </h3>
                 <span className="text-sm text-gray-300">
-                  {location.count} properties for sale
+                  See properties available
                 </span>
               </div>
             </Link>
