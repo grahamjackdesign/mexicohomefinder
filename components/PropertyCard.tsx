@@ -91,7 +91,7 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
                 </button>
 
                 {/* Dot Indicators */}
-                <div className="absolute top-[2px] left-1/2 -translate-x-1/2 flex gap-1 z-10">
+                <div className="absolute bottom-[2px] left-1/2 -translate-x-1/2 flex gap-1 z-10">
                   {images.map((_, index) => (
                     <button
                       key={index}
