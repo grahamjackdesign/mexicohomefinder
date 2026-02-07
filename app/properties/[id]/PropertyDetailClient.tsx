@@ -265,7 +265,7 @@ export default function PropertyDetailClient({
                     <div className="text-xl font-bold text-primary">
                       {property.sqft.toLocaleString()}
                     </div>
-                    <div className="text-sm text-gray-500">Sq Ft</div>
+                    <div className="text-sm text-gray-500">Sq M</div>
                   </div>
                 </div>
               )}
