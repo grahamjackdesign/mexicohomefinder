@@ -396,33 +396,33 @@ export default function PropertiesClient({
           {/* Top Row: Filters */}
           <div className="flex items-center gap-2 flex-wrap">
             {/* Currency Toggle */}
-            <div 
-              className="flex items-center bg-gray-100 rounded-lg p-0.5 relative group"
-            >
-              <button
-                onClick={() => handleCurrencyChange('USD')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  displayCurrency === 'USD'
-                    ? 'bg-white text-secondary shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                USD
-              </button>
-              <button
-                onClick={() => handleCurrencyChange('MXN')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                  displayCurrency === 'MXN'
-                    ? 'bg-white text-secondary shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                MXN
-              </button>
-              {/* Tooltip */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-lg transition-all duration-200 delay-[2s]">
-                Currency conversions are updated daily
+            <div className="relative">
+              <div className="flex items-center bg-gray-100 rounded-lg p-0.5 group">
+                <button
+                  onClick={() => handleCurrencyChange('USD')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    displayCurrency === 'USD'
+                      ? 'bg-white text-secondary shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  USD
+                </button>
+                <button
+                  onClick={() => handleCurrencyChange('MXN')}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                    displayCurrency === 'MXN'
+                      ? 'bg-white text-secondary shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  MXN
+                </button>
               </div>
+              {/* Tooltip */}
+              <span className="invisible group-hover:visible absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded whitespace-nowrap">
+                Currency conversions are updated daily
+              </span>
             </div>
 
             {/* State Dropdown */}
