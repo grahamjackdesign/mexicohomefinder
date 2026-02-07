@@ -398,7 +398,6 @@ export default function PropertiesClient({
             {/* Currency Toggle */}
             <div 
               className="flex items-center bg-gray-100 rounded-lg p-0.5 relative group"
-              title="Currency conversions are updated daily"
             >
               <button
                 onClick={() => handleCurrencyChange('USD')}
