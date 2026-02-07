@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import { supabaseServer } from '@/lib/supabase';
 import PropertyCard from '@/components/PropertyCard';
 import SearchAutocomplete from '@/components/SearchAutocomplete';
+import ContactForm from '@/components/ContactForm';
 import {
   Search,
   MapPin,
@@ -371,118 +372,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <form className="space-y-6" id="contactForm">
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent transition-colors"
-                  placeholder="Your name"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent transition-colors"
-                  placeholder="your@email.com"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
-                Phone (Optional)
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent transition-colors"
-                placeholder="+52 123 456 7890"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
-                Message *
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={5}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent transition-colors resize-none"
-                placeholder="Tell us how we can help..."
-              />
-            </div>
-
-            <div className="text-center">
-              <button
-                type="submit"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-secondary hover:bg-secondary-dark text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <MessageSquare className="w-5 h-5" />
-                Send Message
-              </button>
-              <p id="formStatus" className="mt-4 text-sm"></p>
-            </div>
-          </form>
-
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              document.getElementById('contactForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const status = document.getElementById('formStatus');
-                
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = 'Sending...';
-                status.textContent = '';
-                
-                const formData = {
-                  name: form.name.value,
-                  email: form.email.value,
-                  phone: form.phone.value,
-                  message: form.message.value
-                };
-                
-                try {
-                  const response = await fetch('/api/contact', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                  });
-                  
-                  if (response.ok) {
-                    status.className = 'mt-4 text-sm text-green-600';
-                    status.textContent = 'Message sent successfully! We\\'ll get back to you soon.';
-                    form.reset();
-                  } else {
-                    throw new Error('Failed to send');
-                  }
-                } catch (error) {
-                  status.className = 'mt-4 text-sm text-red-600';
-                  status.textContent = 'Failed to send message. Please try again.';
-                } finally {
-                  submitBtn.disabled = false;
-                  submitBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> Send Message';
-                }
-              });
-            `
-          }} />
+          <ContactForm />
         </div>
       </section>
 
