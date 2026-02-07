@@ -420,7 +420,7 @@ export default function PropertiesClient({
                 MXN
               </button>
               {/* Tooltip */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity delay-[2000ms] pointer-events-none whitespace-nowrap z-50 shadow-lg">
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-lg transition-all duration-200 delay-[2s]">
                 Currency conversions are updated daily
               </div>
             </div>
