@@ -49,41 +49,35 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 href="/properties"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Browse Properties
               </Link>
               <Link
                 href="#guides"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Buying Guide
               </Link>
               <Link
                 href="/#contact-form"
-                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Contact
               </Link>
               <button
                 onClick={() => setListModalOpen(true)}
-                className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg text-white"
+                className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
                 style={{ backgroundColor: '#C85A3E' }}
               >
                 List Your Property
               </button>
               <Link
                 href="/list-property/login"
-                className="ml-1 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg text-white"
+                className="ml-1 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
                 style={{ backgroundColor: '#2C4563' }}
               >
                 Login
@@ -92,11 +86,9 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-lg transition-colors"
+              className="md:hidden p-2 rounded-lg transition-colors hover:bg-[#E8EEF4]"
               style={{ color: '#2C4563' }}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -119,41 +111,33 @@ export default function Header() {
             <div className="px-4 py-4 space-y-2">
               <Link
                 href="/properties"
-                className="block px-4 py-3 rounded-lg font-medium transition-colors"
+                className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Browse Properties
               </Link>
               <Link
                 href="/properties?state=Guanajuato&municipality=San Miguel de Allende"
-                className="block px-4 py-3 rounded-lg font-medium transition-colors"
+                className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 San Miguel de Allende
               </Link>
               <Link
                 href="#guides"
-                className="block px-4 py-3 rounded-lg font-medium transition-colors"
+                className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Buying Guide
               </Link>
               <Link
                 href="/#contact-form"
-                className="block px-4 py-3 rounded-lg font-medium transition-colors"
+                className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#E8EEF4'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 Contact
               </Link>

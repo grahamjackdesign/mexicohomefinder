@@ -18,7 +18,7 @@ export default function Footer() {
                 className="h-[45px] w-auto"
               />
             </Link>
-            <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            <p className="text-sm leading-relaxed text-white/70">
               Connecting American & Canadian buyers with trusted real estate
               professionals across Mexico's most desirable locations.
             </p>
@@ -33,10 +33,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/properties?state=Guanajuato&municipality=San Miguel de Allende"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   San Miguel de Allende
                 </Link>
@@ -44,10 +41,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/properties?state=Jalisco&municipality=Puerto Vallarta"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Puerto Vallarta
                 </Link>
@@ -55,10 +49,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/properties?state=Quintana Roo&municipality=Playa del Carmen"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Playa del Carmen
                 </Link>
@@ -66,10 +57,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/properties?state=Quintana Roo&municipality=Tulum"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Tulum
                 </Link>
@@ -77,10 +65,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/properties?state=Baja California Sur&municipality=Los Cabos"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Los Cabos
                 </Link>
@@ -97,10 +82,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#guides"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Buying Guide for Americans
                 </Link>
@@ -108,10 +90,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Legal Information
                 </Link>
@@ -119,10 +98,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Market Reports
                 </Link>
@@ -130,10 +106,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Blog
                 </Link>
@@ -150,10 +123,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   About Us
                 </Link>
@@ -161,10 +131,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/#contact-form"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Contact
                 </Link>
@@ -172,10 +139,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/#contact-form"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   For Agents
                 </Link>
@@ -183,10 +147,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Privacy Policy
                 </Link>
@@ -194,10 +155,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="text-sm transition-colors hover:underline"
-                  style={{ color: 'rgba(255,255,255,0.7)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#C85A3E'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}
+                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Terms of Service
                 </Link>
@@ -207,38 +165,28 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4"
-             style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
+        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-white/50">
             © {new Date().getFullYear()} MexicoHomeFinder. All rights reserved.
           </p>
           <div className="flex items-center gap-3">
             <a
               href="#"
-              className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C85A3E'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+              className="w-10 h-10 bg-white/10 hover:bg-[#C85A3E] rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
               aria-label="Facebook"
             >
               <Facebook className="w-5 h-5 text-white" />
             </a>
             <a
               href="#"
-              className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C85A3E'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+              className="w-10 h-10 bg-white/10 hover:bg-[#C85A3E] rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5 text-white" />
             </a>
             <a
               href="#"
-              className="w-10 h-10 rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#C85A3E'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+              className="w-10 h-10 bg-white/10 hover:bg-[#C85A3E] rounded-lg flex items-center justify-center transition-all hover:shadow-lg"
               aria-label="YouTube"
             >
               <Youtube className="w-5 h-5 text-white" />
