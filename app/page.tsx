@@ -72,6 +72,26 @@ export default async function HomePage() {
   return (
     <>
       <Header />
+      
+      {/* Carousel Animation Styles */}
+      <style jsx global>{`
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+
+        .animate-scroll {
+          animation: scroll 40s linear infinite;
+        }
+
+        .animate-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
@@ -128,8 +148,46 @@ export default async function HomePage() {
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-white" style={{ clipPath: 'ellipse(75% 100% at 50% 100%)' }} />
       </section>
 
+      {/* Featured Properties */}
+      {featuredProperties && featuredProperties.length > 0 && (
+        <section className="relative -mt-8 pt-4 pb-20 px-4 sm:px-6 lg:px-8 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-4">
+                Featured <span className="text-secondary">properties</span>
+              </h2>
+              <p className="text-lg text-gray-500 max-w-xl mx-auto">
+                Handpicked homes from our most trusted agents
+              </p>
+            </div>
+
+            {/* Infinite Carousel */}
+            <div className="overflow-hidden relative">
+              <div className="flex gap-6 animate-scroll">
+                {/* Duplicate properties for seamless loop */}
+                {[...featuredProperties, ...featuredProperties].map((property, index) => (
+                  <div key={`${property.id}-${index}`} className="flex-shrink-0 w-[300px]">
+                    <PropertyCard property={property} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-center mt-10">
+              <Link
+                href="/properties?featured=true"
+                className="inline-flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all"
+              >
+                View All Featured Properties
+                <ChevronRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Browse Locations Section */}
-      <section className="relative -mt-8 pt-4 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-white" id="locations">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-gray-50" id="locations">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-4">
             Browse homes in <span className="text-secondary">popular locations</span>
@@ -169,8 +227,8 @@ export default async function HomePage() {
           ))}
         </div>
 
-        {/* Secondary Locations */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {/* Secondary Locations - HIDDEN */}
+        {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {SECONDARY_LOCATIONS.map((location) => (
             <Link
               key={location.name}
@@ -188,47 +246,8 @@ export default async function HomePage() {
             View All
             <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
+        </div> */}
       </section>
-
-      {/* Featured Properties */}
-      {featuredProperties && featuredProperties.length > 0 && (
-        <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-display font-bold text-primary mb-2">
-                  Featured <span className="text-secondary">properties</span>
-                </h2>
-                <p className="text-gray-500">
-                  Handpicked homes from our most trusted agents
-                </p>
-              </div>
-              <Link
-                href="/properties?featured=true"
-                className="hidden sm:flex items-center gap-2 text-secondary font-semibold hover:gap-3 transition-all"
-              >
-                View All
-                <ChevronRight className="w-5 h-5" />
-              </Link>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
-              ))}
-            </div>
-
-            <Link
-              href="/properties?featured=true"
-              className="flex sm:hidden items-center justify-center gap-2 text-secondary font-semibold mt-8"
-            >
-              View All Featured Properties
-              <ChevronRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </section>
-      )}
 
       {/* Trust Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary relative overflow-hidden">
