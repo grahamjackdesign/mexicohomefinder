@@ -20,9 +20,17 @@ export default function Header() {
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${
           isHomePage 
-            ? 'bg-white shadow-sm' 
-            : 'bg-white/95 backdrop-blur-md border-b border-gray-200'
+            ? 'shadow-sm' 
+            : 'backdrop-blur-md border-b border-gray-700'
         }`}
+        style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          backgroundImage: `
+            linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+            repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+            repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+          `
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
@@ -52,31 +60,19 @@ export default function Header() {
             <nav className="hidden md:flex items-center gap-1">
               <Link
                 href="/properties"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isHomePage
-                    ? 'text-secondary hover:text-secondary-dark hover:bg-secondary/10'
-                    : 'text-gray-700 hover:text-primary hover:bg-gray-100'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:text-white hover:bg-white/10"
               >
                 Browse Properties
               </Link>
               <Link
                 href="#guides"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isHomePage
-                    ? 'text-secondary hover:text-secondary-dark hover:bg-secondary/10'
-                    : 'text-gray-700 hover:text-primary hover:bg-gray-100'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:text-white hover:bg-white/10"
               >
                 Buying Guide
               </Link>
               <Link
                 href="/#contact-form"
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isHomePage
-                    ? 'text-secondary hover:text-secondary-dark hover:bg-secondary/10'
-                    : 'text-gray-700 hover:text-primary hover:bg-gray-100'
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:text-white hover:bg-white/10"
               >
                 Contact
               </Link>
@@ -96,11 +92,7 @@ export default function Header() {
 
             {/* Mobile Menu Button */}
             <button
-              className={`md:hidden p-2 rounded-lg transition-colors ${
-                isHomePage
-                  ? 'text-secondary hover:bg-secondary/10'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
+              className="md:hidden p-2 rounded-lg transition-colors text-gray-300 hover:bg-white/10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -114,48 +106,39 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className={`md:hidden ${isHomePage ? 'bg-white' : 'bg-white'} border-t ${isHomePage ? 'border-gray-200' : 'border-gray-200'}`}>
+          <div className="md:hidden border-t border-gray-700" style={{
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+            backgroundImage: `
+              linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+              repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+              repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+            `
+          }}>
             <div className="px-4 py-4 space-y-2">
               <Link
                 href="/properties"
-                className={`block px-4 py-3 rounded-lg font-medium ${
-                  isHomePage
-                    ? 'text-secondary hover:bg-secondary/10'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className="block px-4 py-3 rounded-lg font-medium text-gray-300 hover:bg-white/10 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Browse Properties
               </Link>
               <Link
                 href="/properties?state=Guanajuato&municipality=San Miguel de Allende"
-                className={`block px-4 py-3 rounded-lg font-medium ${
-                  isHomePage
-                    ? 'text-secondary hover:bg-secondary/10'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className="block px-4 py-3 rounded-lg font-medium text-gray-300 hover:bg-white/10 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 San Miguel de Allende
               </Link>
               <Link
                 href="#guides"
-                className={`block px-4 py-3 rounded-lg font-medium ${
-                  isHomePage
-                    ? 'text-secondary hover:bg-secondary/10'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className="block px-4 py-3 rounded-lg font-medium text-gray-300 hover:bg-white/10 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Buying Guide
               </Link>
               <Link
                 href="/#contact-form"
-                className={`block px-4 py-3 rounded-lg font-medium ${
-                  isHomePage
-                    ? 'text-secondary hover:bg-secondary/10'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
+                className="block px-4 py-3 rounded-lg font-medium text-gray-300 hover:bg-white/10 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Contact

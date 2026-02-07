@@ -88,7 +88,18 @@ export default async function HomePage() {
           >
             <source src="https://dvscgzslsexnuwubmnfb.supabase.co/storage/v1/object/public/hero-images/SMA_vector_anim_loop.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/60 to-transparent" />
+          {/* Dark textured overlay */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              background: 'linear-gradient(to top, rgba(26,26,26,0.95) 0%, rgba(45,45,45,0.6) 50%, transparent 100%)',
+              backgroundImage: `
+                linear-gradient(to top, rgba(26,26,26,0.95) 0%, rgba(45,45,45,0.6) 50%, transparent 100%),
+                repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px),
+                repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(0,0,0,.05) 2px, rgba(0,0,0,.05) 4px)
+              `
+            }}
+          />
         </div>
 
         {/* Content */}
@@ -125,8 +136,19 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Curved bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-white" style={{ clipPath: 'ellipse(75% 100% at 50% 100%)' }} />
+        {/* Curved bottom with dark texture */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-24" 
+          style={{ 
+            clipPath: 'ellipse(75% 100% at 50% 100%)',
+            background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+            backgroundImage: `
+              linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
+              repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(255,255,255,.02) 2px, rgba(255,255,255,.02) 4px),
+              repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
+            `
+          }} 
+        />
       </section>
 
       {/* Featured Properties */}
@@ -135,7 +157,7 @@ export default async function HomePage() {
       )}
 
       {/* Browse Locations Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative" id="locations" style={{
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative w-full" id="locations" style={{
         background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
         backgroundImage: `
           linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%),
@@ -143,15 +165,16 @@ export default async function HomePage() {
           repeating-linear-gradient(-45deg, transparent, transparent 2px, rgba(255,255,255,.01) 2px, rgba(255,255,255,.01) 4px)
         `
       }}>
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
-            Discover Mexico's <span className="text-secondary">top destinations</span>
-          </h2>
-          <p className="text-lg text-gray-300 max-w-xl mx-auto">
-            From charming colonial towns to pristine beaches—explore the regions 
-            where expats are building their new lives.
-          </p>
-        </div>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-white mb-4">
+              Discover Mexico's <span className="text-secondary">top destinations</span>
+            </h2>
+            <p className="text-lg text-gray-300 max-w-xl mx-auto">
+              From charming colonial towns to pristine beaches—explore the regions 
+              where expats are building their new lives.
+            </p>
+          </div>
 
         {/* Location Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
