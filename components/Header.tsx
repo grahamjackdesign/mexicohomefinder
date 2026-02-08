@@ -27,8 +27,8 @@ export default function Header() {
             <Link href="/" className="flex items-center">
               {/* Desktop - Full Logo */}
               <Image
-                src="/MHF_logo_final.svg"
-                alt="MexicoHomeFinder"
+                src="/Asset_1.svg"
+                alt="Mexico Home Finder"
                 width={200}
                 height={50}
                 className="hidden sm:block h-[50px] w-auto"
@@ -36,8 +36,8 @@ export default function Header() {
               />
               {/* Mobile - Smaller Logo */}
               <Image
-                src="/MHF_logo_final.svg"
-                alt="MexicoHomeFinder"
+                src="/Asset_1.svg"
+                alt="Mexico Home Finder"
                 width={140}
                 height={35}
                 className="block sm:hidden h-[35px] w-auto"
