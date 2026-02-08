@@ -29,13 +29,13 @@ export default function Header() {
               <img
                 src="/Asset_1.svg"
                 alt="Mexico Home Finder"
-                className="hidden sm:block h-[50px] w-auto"
+                className="hidden sm:block h-[60px] w-auto"
               />
               {/* Mobile - Smaller Logo */}
               <img
                 src="/Asset_1.svg"
                 alt="Mexico Home Finder"
-                className="block sm:hidden h-[35px] w-auto"
+                className="block sm:hidden h-[45px] w-auto"
               />
             </Link>
 
