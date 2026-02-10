@@ -367,7 +367,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       has_pet_area: formData.has_pet_area,
       has_playground: formData.has_playground,
       has_soccer_field: formData.has_soccer_field,
-      has_covered_parking: formData.has_covered_parking,
       has_bbq_area: formData.has_bbq_area,
       has_laundry: formData.has_laundry,
       has_storage: formData.has_storage,
