@@ -28,16 +28,11 @@ import {
   MapPin,
   Home,
   Car,
-  Waves,
-  Wind,
-  PawPrint,
   Save,
   Send,
   Image as ImageIcon,
   CheckCircle,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   Building,
   Video,
   GripVertical,
@@ -132,7 +127,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   const [images, setImages] = useState<string[]>(existingProperty?.images || []);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
-  const [showAmenities, setShowAmenities] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // DnD sensors for photo reorder
@@ -199,7 +193,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     has_pet_area: existingProperty?.has_pet_area || false,
     has_playground: existingProperty?.has_playground || false,
     has_soccer_field: existingProperty?.has_soccer_field || false,
-    has_covered_parking: existingProperty?.has_covered_parking || false,
+
     has_bbq_area: existingProperty?.has_bbq_area || false,
     has_laundry: existingProperty?.has_laundry || false,
     has_storage: existingProperty?.has_storage || false,
@@ -767,100 +761,63 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
         </div>
       </div>
 
-      {/* Basic Amenities */}
+      {/* Amenities */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6">{t('propertyForm.amenities')}</h2>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-            <input
-              type="checkbox"
-              checked={formData.has_pool}
-              onChange={(e) => setFormData(prev => ({ ...prev, has_pool: e.target.checked }))}
-              className="w-5 h-5 text-secondary rounded"
-            />
-            <Waves className="w-5 h-5 text-gray-500" />
-            <span>{t('propertyForm.pool')}</span>
+        {/* Parking Dropdown */}
+        <div className="mb-6">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+            <Car className="w-4 h-4 text-gray-500" />
+            {t('propertyForm.parking')}
           </label>
-
-          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-            <input
-              type="checkbox"
-              checked={formData.has_ac}
-              onChange={(e) => setFormData(prev => ({ ...prev, has_ac: e.target.checked }))}
-              className="w-5 h-5 text-secondary rounded"
-            />
-            <Wind className="w-5 h-5 text-gray-500" />
-            <span>{t('propertyForm.airConditioning')}</span>
-          </label>
-
-          <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-            <input
-              type="checkbox"
-              checked={formData.pets_allowed}
-              onChange={(e) => setFormData(prev => ({ ...prev, pets_allowed: e.target.checked }))}
-              className="w-5 h-5 text-secondary rounded"
-            />
-            <PawPrint className="w-5 h-5 text-gray-500" />
-            <span>{t('propertyForm.petsAllowed')}</span>
-          </label>
-
-          <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl">
-            <Car className="w-5 h-5 text-gray-500" />
-            <span>{t('propertyForm.parking')}:</span>
-            <input
-              type="text"
-              value={formData.parking}
-              onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
-              placeholder={t('propertyForm.parkingPlaceholder')}
-              className="ml-auto w-24 px-2 py-1 border border-gray-300 rounded-lg text-sm"
-            />
-          </div>
+          <select
+            value={formData.parking}
+            onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
+            className="w-full md:w-64 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white"
+          >
+            <option value="">No parking / Sin estacionamiento</option>
+            <option value="Off Street">Off Street / Fuera de la calle</option>
+            <option value="On Street">On Street / En la calle</option>
+            <option value="Garage">Garage / Cochera</option>
+            <option value="Covered Parking">Covered Parking / Estacionamiento techado</option>
+          </select>
         </div>
 
-        {/* Expandable Additional Amenities */}
-        <button
-          type="button"
-          onClick={() => setShowAmenities(!showAmenities)}
-          className="mt-4 flex items-center gap-2 text-secondary font-medium hover:text-secondary-dark"
-        >
-          {showAmenities ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {showAmenities ? t('propertyForm.hideAmenities') : t('propertyForm.showAmenities')}
-        </button>
-
-        {showAmenities && (
-          <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { key: 'has_spa', label: '🧖 Spa' },
-              { key: 'has_jacuzzi', label: '🛁 Jacuzzi' },
-              { key: 'has_gym', label: '💪 Gym' },
-              { key: 'has_sauna', label: '🧖 Sauna' },
-              { key: 'has_24_7_security', label: '🔒 24/7 Security' },
-              { key: 'has_reception', label: '🛎️ Reception' },
-              { key: 'has_event_room', label: '🎉 Event Room' },
-              { key: 'has_restaurant', label: '🍽️ Restaurant' },
-              { key: 'has_pet_area', label: '🐕 Pet Area' },
-              { key: 'has_playground', label: '🎪 Playground' },
-              { key: 'has_soccer_field', label: '⚽ Soccer Field' },
-              { key: 'has_covered_parking', label: '🏠 Covered Parking' },
-              { key: 'has_bbq_area', label: '🔥 BBQ Area' },
-              { key: 'has_laundry', label: '🧺 Laundry' },
-              { key: 'has_storage', label: '📦 Storage' },
-              { key: 'has_elevator', label: '🛗 Elevator' },
-              { key: 'has_padel_court', label: '🎾 Padel Court' },
-            ].map(({ key, label }) => (
-              <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={(formData as any)[key]}
-                  onChange={(e) => setFormData(prev => ({ ...prev, [key]: e.target.checked }))}
-                  className="w-4 h-4 text-secondary rounded"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-        )}
+        {/* All Amenities as Checkboxes */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { key: 'has_pool', label: '🏊 Pool / Alberca' },
+            { key: 'has_ac', label: '❄️ A/C / Aire acondicionado' },
+            { key: 'pets_allowed', label: '🐾 Pets Allowed / Mascotas' },
+            { key: 'has_spa', label: '🧖 Spa' },
+            { key: 'has_jacuzzi', label: '🛁 Jacuzzi' },
+            { key: 'has_gym', label: '💪 Gym' },
+            { key: 'has_sauna', label: '🧖 Sauna' },
+            { key: 'has_24_7_security', label: '🔒 24/7 Security / Seguridad' },
+            { key: 'has_reception', label: '🛎️ Reception / Recepción' },
+            { key: 'has_event_room', label: '🎉 Event Room / Salón' },
+            { key: 'has_restaurant', label: '🍽️ Restaurant / Restaurante' },
+            { key: 'has_pet_area', label: '🐕 Pet Area / Área de mascotas' },
+            { key: 'has_playground', label: '🎪 Playground / Juegos infantiles' },
+            { key: 'has_soccer_field', label: '⚽ Soccer Field / Cancha' },
+            { key: 'has_bbq_area', label: '🔥 BBQ Area / Asador' },
+            { key: 'has_laundry', label: '🧺 Laundry / Lavandería' },
+            { key: 'has_storage', label: '📦 Storage / Bodega' },
+            { key: 'has_elevator', label: '🛗 Elevator / Elevador' },
+            { key: 'has_padel_court', label: '🎾 Padel Court / Cancha de pádel' },
+          ].map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+              <input
+                type="checkbox"
+                checked={(formData as any)[key]}
+                onChange={(e) => setFormData(prev => ({ ...prev, [key]: e.target.checked }))}
+                className="w-4 h-4 text-secondary rounded"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
       </div>
 
       {/* Photos */}
