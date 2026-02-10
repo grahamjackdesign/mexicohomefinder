@@ -384,13 +384,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('properties')
+          .from('public_properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('properties')
+          .from('public_properties')
           .insert(propertyData);
         if (error) throw error;
       }
@@ -422,13 +422,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('properties')
+          .from('public_properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('properties')
+          .from('public_properties')
           .insert(propertyData);
         if (error) throw error;
       }
