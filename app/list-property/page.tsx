@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useTranslations } from '@/components/TranslationProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import PublicPropertyForm from '@/components/PublicPropertyForm';
-import { Home, LogOut, User, Clock, CheckCircle, AlertCircle, Eye, XCircle, Edit } from 'lucide-react';
+import { LogOut, User, Clock, CheckCircle, AlertCircle, Eye, XCircle, Edit } from 'lucide-react';
 
 type PropertyData = {
   id: string;
@@ -51,6 +53,7 @@ type UserData = {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { t } = useTranslations();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [property, setProperty] = useState<PropertyData | null>(null);
@@ -68,7 +71,6 @@ export default function DashboardPage() {
         return;
       }
 
-      // Get user data
       const userData: UserData = {
         id: session.user.id,
         email: session.user.email || '',
@@ -77,7 +79,6 @@ export default function DashboardPage() {
       };
       setUser(userData);
 
-      // Check for existing property (public listings use the main properties table)
       const { data: existingProperty } = await supabase
         .from('properties')
         .select('*')
@@ -106,28 +107,28 @@ export default function DashboardPage() {
         return (
           <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">
             <Clock className="w-4 h-4" />
-            Draft
+            {t('mhfDashboard.status.draft')}
           </span>
         );
       case 'pending':
         return (
           <span className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">
             <AlertCircle className="w-4 h-4" />
-            Pending Review
+            {t('mhfDashboard.status.pending')}
           </span>
         );
       case 'active':
         return (
           <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
             <CheckCircle className="w-4 h-4" />
-            Active
+            {t('mhfDashboard.status.active')}
           </span>
         );
       case 'rejected':
         return (
           <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
             <XCircle className="w-4 h-4" />
-            Changes Needed
+            {t('mhfDashboard.status.rejected')}
           </span>
         );
       default:
@@ -159,16 +160,12 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <Home className="w-5 h-5 text-secondary" />
-              </div>
-              <span className="text-lg font-bold text-primary">
-                Mexico<span className="text-secondary">HomeFinder</span>
-              </span>
+              <img src="/Asset_1.svg" alt="MexicoHomeFinder" className="h-9 w-auto" />
             </Link>
 
-            {/* User Info & Logout */}
+            {/* Language Switcher, User Info & Logout */}
             <div className="flex items-center gap-4">
+              <LanguageSwitcher />
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="w-4 h-4" />
                 <span className="hidden sm:inline">{userName}</span>
@@ -178,7 +175,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden sm:inline">{t('mhfDashboard.logout')}</span>
               </button>
             </div>
           </div>
@@ -187,7 +184,7 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Rejection Banner - Show prominently if rejected */}
+        {/* Rejection Banner */}
         {property && property.status === 'rejected' && (
           <div className="mb-6 p-5 rounded-xl bg-red-50 border border-red-200">
             <div className="flex items-start gap-3">
@@ -195,26 +192,26 @@ export default function DashboardPage() {
                 <XCircle className="w-5 h-5 text-red-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-red-800 mb-1">Changes Needed</h3>
+                <h3 className="font-semibold text-red-800 mb-1">{t('mhfDashboard.rejection.title')}</h3>
                 <p className="text-red-700 text-sm mb-3">
-                  Your listing needs some changes before it can be approved. Please review the feedback below and update your listing.
+                  {t('mhfDashboard.rejection.description')}
                 </p>
                 {property.rejection_reason && (
                   <div className="bg-white border border-red-200 rounded-lg p-4">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Feedback from our team:</p>
+                    <p className="text-sm font-medium text-gray-700 mb-1">{t('mhfDashboard.rejection.feedbackLabel')}</p>
                     <p className="text-gray-800">{property.rejection_reason}</p>
                   </div>
                 )}
                 <p className="text-red-600 text-sm mt-3 flex items-center gap-2">
                   <Edit className="w-4 h-4" />
-                  Make the necessary changes below and submit again for review.
+                  {t('mhfDashboard.rejection.resubmitHint')}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Status Banner (if property exists and is pending/active) */}
+        {/* Status Banner (pending/active) */}
         {property && (property.status === 'pending' || property.status === 'active') && (
           <div className={`mb-6 p-4 rounded-xl flex items-center justify-between ${
             property.status === 'active' 
@@ -225,8 +222,8 @@ export default function DashboardPage() {
               {getStatusBadge(property.status)}
               <span className="text-sm text-gray-700">
                 {property.status === 'active' 
-                  ? 'Your property is live on MexicoHomeFinder!' 
-                  : 'Your property is being reviewed by our team.'}
+                  ? t('mhfDashboard.statusMessage.active')
+                  : t('mhfDashboard.statusMessage.pending')}
               </span>
             </div>
             {property.status === 'active' && (
@@ -235,7 +232,7 @@ export default function DashboardPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition-colors"
               >
                 <Eye className="w-4 h-4" />
-                View Listing
+                {t('mhfDashboard.viewListing')}
               </Link>
             )}
           </div>
@@ -246,16 +243,16 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-primary">
             {property 
               ? property.status === 'rejected' 
-                ? 'Update & Resubmit Your Property' 
-                : 'Edit Your Property'
-              : 'List Your Property'}
+                ? t('mhfDashboard.pageTitle.resubmit')
+                : t('mhfDashboard.pageTitle.edit')
+              : t('mhfDashboard.pageTitle.new')}
           </h1>
           <p className="text-gray-600 mt-1">
             {property 
               ? property.status === 'rejected'
-                ? 'Please address the feedback above, make changes, and submit again.'
-                : 'Update your property details below.' 
-              : 'Fill in the details below to list your property on MexicoHomeFinder.'}
+                ? t('mhfDashboard.pageSubtitle.resubmit')
+                : t('mhfDashboard.pageSubtitle.edit')
+              : t('mhfDashboard.pageSubtitle.new')}
           </p>
         </div>
 

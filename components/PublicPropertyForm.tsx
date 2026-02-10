@@ -2,8 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useTranslations } from '@/components/TranslationProvider';
 import { getStateNames, getMunicipalitiesByState } from '@/lib/locations';
 import imageCompression from 'browser-image-compression';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import {
   Upload,
   X,
@@ -22,6 +40,7 @@ import {
   ChevronUp,
   Building,
   Video,
+  GripVertical,
 } from 'lucide-react';
 
 const PROPERTY_CATEGORIES = [
@@ -54,6 +73,51 @@ const SECURITY_LEVELS = [
   { value: 'Low', label: 'Low / Bajo' },
 ];
 
+// Sortable photo component for drag-and-drop reorder
+function SortablePhoto({ id, url, index, onRemove }: { id: string; url: string; index: number; onRemove: (index: number) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : 'auto' as any,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
+      <div {...attributes} {...listeners} className="absolute inset-0 cursor-grab active:cursor-grabbing z-10">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <GripVertical className="w-8 h-8 text-white opacity-0 group-hover:opacity-70 transition-opacity drop-shadow-lg" />
+        </div>
+      </div>
+      <img src={url} alt={`Property ${index + 1}`} className="w-full h-full object-cover" />
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onRemove(index); }}
+        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20"
+      >
+        <X className="w-4 h-4" />
+      </button>
+      {index === 0 && (
+        <span className="absolute bottom-2 left-2 px-2 py-1 bg-secondary text-white text-xs rounded-lg z-20">
+          Main
+        </span>
+      )}
+      <div className="absolute top-2 left-2 bg-gray-900/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold z-20">
+        {index + 1}
+      </div>
+    </div>
+  );
+}
+
 type Props = {
   userId: string;
   userEmail: string;
@@ -62,6 +126,7 @@ type Props = {
 };
 
 export default function PublicPropertyForm({ userId, userEmail, userName, existingProperty }: Props) {
+  const { t } = useTranslations();
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [images, setImages] = useState<string[]>(existingProperty?.images || []);
@@ -69,6 +134,23 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [showAmenities, setShowAmenities] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // DnD sensors for photo reorder
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setImages((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   // Cascading location state
   const [selectedState, setSelectedState] = useState(existingProperty?.state || '');
@@ -379,21 +461,21 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
           <Home className="w-5 h-5 text-secondary" />
-          Property Details
+          {t('propertyForm.propertyDetails')}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Title */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Property Title *
+              {t('propertyForm.title')} *
             </label>
             <input
               type="text"
               required
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="e.g., Beautiful 3BR Home in Centro"
+              placeholder={t('propertyForm.titlePlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
           </div>
@@ -575,7 +657,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
           <MapPin className="w-5 h-5 text-secondary" />
-          Location
+          {t('propertyForm.location')}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -690,7 +772,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       {/* Basic Amenities */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-primary mb-6">Basic Amenities</h2>
+        <h2 className="text-xl font-bold text-primary mb-6">{t('propertyForm.amenities')}</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
@@ -701,7 +783,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               className="w-5 h-5 text-secondary rounded"
             />
             <Waves className="w-5 h-5 text-gray-500" />
-            <span>Pool</span>
+            <span>{t('propertyForm.pool')}</span>
           </label>
 
           <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
@@ -712,7 +794,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               className="w-5 h-5 text-secondary rounded"
             />
             <Wind className="w-5 h-5 text-gray-500" />
-            <span>A/C</span>
+            <span>{t('propertyForm.airConditioning')}</span>
           </label>
 
           <label className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
@@ -723,12 +805,12 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               className="w-5 h-5 text-secondary rounded"
             />
             <PawPrint className="w-5 h-5 text-gray-500" />
-            <span>Pets OK</span>
+            <span>{t('propertyForm.petsAllowed')}</span>
           </label>
 
           <div className="flex items-center gap-3 p-4 border border-gray-200 rounded-xl">
             <Car className="w-5 h-5 text-gray-500" />
-            <span>Parking:</span>
+            <span>{t('propertyForm.parking')}:</span>
             <input
               type="text"
               value={formData.parking}
@@ -746,7 +828,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           className="mt-4 flex items-center gap-2 text-secondary font-medium hover:text-secondary-dark"
         >
           {showAmenities ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          {showAmenities ? 'Hide' : 'Show'} Additional Amenities
+          {showAmenities ? t('propertyForm.hideAmenities') : t('propertyForm.showAmenities')}
         </button>
 
         {showAmenities && (
@@ -788,7 +870,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       <div id="photos-section" className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
           <ImageIcon className="w-5 h-5 text-secondary" />
-          Photos <span className="text-red-500">*</span>
+          {t('propertyForm.photos')} <span className="text-red-500">*</span>
         </h2>
 
         {/* Error message for no photos */}
@@ -799,52 +881,48 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          {images.map((img, idx) => (
-            <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden group">
-              <img src={img} alt={`Property ${idx + 1}`} className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => removeImage(idx)}
-                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              {idx === 0 && (
-                <span className="absolute bottom-2 left-2 px-2 py-1 bg-secondary text-white text-xs rounded-lg">
-                  Main Photo
-                </span>
-              )}
-            </div>
-          ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={images} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              {images.map((img, idx) => (
+                <SortablePhoto
+                  key={img}
+                  id={img}
+                  url={img}
+                  index={idx}
+                  onRemove={removeImage}
+                />
+              ))}
 
-          <label className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageUpload}
-              className="hidden"
-              disabled={uploadingImage}
-            />
-            {uploadingImage ? (
-              <>
-                <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-2" />
-                <span className="text-sm text-gray-500">
-                  {uploadProgress.current} / {uploadProgress.total}
-                </span>
-              </>
-            ) : (
-              <>
-                <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-500">Add Photos</span>
-              </>
-            )}
-          </label>
-        </div>
+              <label className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
+                {uploadingImage ? (
+                  <>
+                    <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-2" />
+                    <span className="text-sm text-gray-500">
+                      {uploadProgress.current} / {uploadProgress.total}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}</span>
+                  </>
+                )}
+              </label>
+            </div>
+          </SortableContext>
+        </DndContext>
 
         <p className="text-sm text-gray-500">
-          Upload high-quality photos. The first photo will be used as the main listing image. <span className="text-red-500 font-medium">At least one photo is required.</span>
+          {t('propertyForm.uploadHint')}
         </p>
       </div>
 
@@ -874,15 +952,15 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       {/* Contact Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-primary mb-6">Contact Information</h2>
+        <h2 className="text-xl font-bold text-primary mb-6">{t('propertyForm.contactInfo')}</h2>
         <p className="text-sm text-gray-500 mb-4">
-          This is how interested buyers/renters will contact you.
+          {t('propertyForm.contactDescription')}
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contact Name *
+              {t('propertyForm.contactName')} *
             </label>
             <input
               type="text"
@@ -895,7 +973,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contact Email *
+              {t('propertyForm.contactEmail')} *
             </label>
             <input
               type="email"
@@ -908,7 +986,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Contact Phone *
+              {t('propertyForm.contactPhone')} *
             </label>
             <input
               type="tel"
@@ -929,19 +1007,19 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
             {saveStatus === 'saving' && (
               <span className="text-gray-500 flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                Saving...
+                {t('propertyForm.saving')}
               </span>
             )}
             {saveStatus === 'saved' && (
               <span className="text-green-600 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
-                Draft saved
+                {t('propertyForm.draftSaved')}
               </span>
             )}
             {saveStatus === 'error' && (
               <span className="text-red-600 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
-                Error saving
+                {t('propertyForm.errorSaving')}
               </span>
             )}
           </div>
@@ -954,7 +1032,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Save className="w-4 h-4" />
-              Save Draft
+              {t('propertyForm.saveDraft')}
             </button>
 
             <button
@@ -967,7 +1045,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  Submit for Review
+                  {t('propertyForm.submit')}
                 </>
               )}
             </button>
