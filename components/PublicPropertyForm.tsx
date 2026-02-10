@@ -172,7 +172,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     has_pool: existingProperty?.has_pool || false,
     has_ac: existingProperty?.has_ac || false,
     pets_allowed: existingProperty?.pets_allowed || false,
-    parking: existingProperty?.parking || '',
+    parking: existingProperty?.parking || 0,
     // Location
     google_maps_link: existingProperty?.google_maps_link || '',
     // Video
@@ -772,14 +772,14 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           </label>
           <select
             value={formData.parking}
-            onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
+            onChange={(e) => setFormData(prev => ({ ...prev, parking: parseInt(e.target.value) }))}
             className="w-full md:w-64 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary bg-white"
           >
-            <option value="">No parking / Sin estacionamiento</option>
-            <option value="Off Street">Off Street / Fuera de la calle</option>
-            <option value="On Street">On Street / En la calle</option>
-            <option value="Garage">Garage / Cochera</option>
-            <option value="Covered Parking">Covered Parking / Estacionamiento techado</option>
+            <option value={0}>No parking / Sin estacionamiento</option>
+            <option value={1}>Off Street / Fuera de la calle</option>
+            <option value={2}>On Street / En la calle</option>
+            <option value={3}>Garage / Cochera</option>
+            <option value={4}>Covered Parking / Estacionamiento techado</option>
           </select>
         </div>
 
