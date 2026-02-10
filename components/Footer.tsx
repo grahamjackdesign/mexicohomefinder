@@ -11,7 +11,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <Link href="/" className="inline-block mb-5">
               <Image
-                src="/MHF_logo_on_dark.svg"
+                src="/Asset_1.svg"
                 alt="MexicoHomeFinder"
                 width={180}
                 height={45}
@@ -81,7 +81,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#guides"
+                  href="/blog"
                   className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Buying Guide for Americans
@@ -122,26 +122,10 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
-                  href="#"
-                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/#contact-form"
                   className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
                 >
                   Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/#contact-form"
-                  className="text-sm transition-colors hover:underline hover:text-[#C85A3E] text-white/70"
-                >
-                  For Agents
                 </Link>
               </li>
               <li>
