@@ -480,7 +480,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Property Category */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Property Type *
+              {t('propertyForm.propertyType')} *
             </label>
             <select
               required
@@ -488,7 +488,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               onChange={(e) => setFormData(prev => ({ ...prev, property_category: e.target.value }))}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             >
-              <option value="">Select type...</option>
+              <option value="">{t('propertyForm.selectType')}</option>
               {PROPERTY_CATEGORIES.map(cat => (
                 <option key={cat.value} value={cat.value}>{cat.label}</option>
               ))}
@@ -498,7 +498,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Listing Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Listing Type *
+              {t('propertyForm.listingType')} *
             </label>
             <select
               required
@@ -515,7 +515,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Price *
+              {t('propertyForm.price')} *
             </label>
             <div className="flex gap-2">
               <select
@@ -544,7 +544,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bedrooms
+                  {t('propertyForm.bedrooms')}
                 </label>
                 <select
                   value={formData.bedrooms}
@@ -559,7 +559,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bathrooms
+                  {t('propertyForm.bathrooms')}
                 </label>
                 <select
                   value={formData.bathrooms}
@@ -577,7 +577,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Size */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Construction Size (m²)
+              {t('propertyForm.constructionSize')} (m²)
             </label>
             <input
               type="number"
@@ -590,7 +590,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Lot Size (m²)
+              {t('propertyForm.lotSize')} (m²)
             </label>
             <input
               type="number"
@@ -604,7 +604,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Year Built */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Year Built
+              {t('propertyForm.yearBuilt')}
             </label>
             <input
               type="number"
@@ -612,7 +612,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               max={new Date().getFullYear()}
               value={formData.year_construction || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, year_construction: e.target.value }))}
-              placeholder="e.g., 2020"
+              placeholder={t('propertyForm.yearBuiltPlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
           </div>
@@ -620,14 +620,14 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Description */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description *
+              {t('propertyForm.description')} *
             </label>
             <textarea
               required
               rows={5}
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your property..."
+              placeholder={t('propertyForm.descriptionPlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
           </div>
@@ -635,7 +635,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Security Level - right under description */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Security Level
+              {t('propertyForm.securityLevel')}
             </label>
             <select
               value={formData.security}
@@ -661,7 +661,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* State - cascading */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              State *
+              {t('propertyForm.state')} *
             </label>
             <select
               required
@@ -669,7 +669,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               onChange={(e) => handleStateChange(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             >
-              <option value="">Select state...</option>
+              <option value="">{t('propertyForm.selectState')}</option>
               {getStateNames().map(state => (
                 <option key={state} value={state}>{state}</option>
               ))}
@@ -679,7 +679,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Municipality - cascading with free text option */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Municipality / City *
+              {t('propertyForm.municipality')} *
             </label>
             {availableMunicipalities.length > 0 ? (
               <>
@@ -690,7 +690,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="">
-                    {selectedState ? 'Select or type below...' : 'Select state first'}
+                    {selectedState ? t('propertyForm.selectOrType') : t('propertyForm.selectStateFirst')}
                   </option>
                   {availableMunicipalities.map(muni => (
                     <option key={muni.name} value={muni.name}>{muni.name}</option>
@@ -700,7 +700,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
                   type="text"
                   value={selectedMunicipality}
                   onChange={(e) => setSelectedMunicipality(e.target.value)}
-                  placeholder="Or type municipality name..."
+                  placeholder={t('propertyForm.orTypeMunicipality')}
                   className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
                 />
               </>
@@ -711,7 +711,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
                 value={selectedMunicipality}
                 onChange={(e) => setSelectedMunicipality(e.target.value)}
                 disabled={!selectedState}
-                placeholder={selectedState ? 'Type municipality name...' : 'Select state first'}
+                placeholder={selectedState ? t('propertyForm.typeMunicipality') : t('propertyForm.selectStateFirst')}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:bg-gray-100 disabled:cursor-not-allowed"
               />
             )}
@@ -720,13 +720,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Neighborhood */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Neighborhood / Colonia
+              {t('propertyForm.neighborhood')}
             </label>
             <input
               type="text"
               value={formData.neighborhood}
               onChange={(e) => setFormData(prev => ({ ...prev, neighborhood: e.target.value }))}
-              placeholder="e.g., Centro"
+              placeholder={t('propertyForm.neighborhoodPlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
           </div>
@@ -734,13 +734,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Street Address */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Street Address
+              {t('propertyForm.address')}
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-              placeholder="e.g., Calle Aldama 15"
+              placeholder={t('propertyForm.addressPlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
           </div>
@@ -748,19 +748,19 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           {/* Google Maps Link */}
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Google Maps Link (for map pin)
+              {t('propertyForm.googleMapsLink')}
             </label>
             <input
               type="text"
               value={formData.google_maps_link}
               onChange={(e) => handleGoogleMapsLinkChange(e.target.value)}
-              placeholder="Paste Google Maps link here..."
+              placeholder={t('propertyForm.googleMapsPlaceholder')}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
             />
             {extractedCoords && (
               <p className="mt-2 text-sm text-green-600 flex items-center gap-1">
                 <CheckCircle className="w-4 h-4" />
-                Coordinates extracted: {extractedCoords.lat.toFixed(6)}, {extractedCoords.lng.toFixed(6)}
+                {t('propertyForm.coordinatesExtracted')}: {extractedCoords.lat.toFixed(6)}, {extractedCoords.lng.toFixed(6)}
               </p>
             )}
           </div>
@@ -812,7 +812,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               type="text"
               value={formData.parking}
               onChange={(e) => setFormData(prev => ({ ...prev, parking: e.target.value }))}
-              placeholder="e.g., 2 cars"
+              placeholder={t('propertyForm.parkingPlaceholder')}
               className="ml-auto w-24 px-2 py-1 border border-gray-300 rounded-lg text-sm"
             />
           </div>
@@ -927,22 +927,22 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
           <Video className="w-5 h-5 text-secondary" />
-          Video (Tour) URL
+          {t('propertyForm.videoUrl')}
         </h2>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            YouTube or Vimeo Link
+            {t('propertyForm.videoLabel')}
           </label>
           <input
             type="url"
             value={formData.video_url}
             onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-            placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
+            placeholder={t('propertyForm.videoPlaceholder')}
             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
           />
           <p className="text-sm text-gray-500 mt-2">
-            Add a virtual tour or walkthrough video to attract more buyers.
+            {t('propertyForm.videoHint')}
           </p>
         </div>
       </div>
