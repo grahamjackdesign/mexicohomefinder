@@ -128,6 +128,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   // DnD sensors for photo reorder
   const sensors = useSensors(
@@ -433,7 +434,10 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
         if (error) throw error;
       }
 
-      window.location.reload();
+      setShowSuccess(true);
+      setTimeout(() => {
+        window.location.href = 'https://mexicohomefinder.com';
+      }, 5000);
     } catch (err: any) {
       console.error('Error submitting property:', err);
       console.error('Error details:', JSON.stringify(err, null, 2));
@@ -446,7 +450,29 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <>
+      {/* Success Popup */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center animate-in fade-in zoom-in duration-300">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-primary mb-3">
+              {t('propertyForm.successTitle') || 'Property Submitted! / ¡Propiedad Enviada!'}
+            </h2>
+            <p className="text-gray-600">
+              Thanks for submitting your property to Mexico Home Finder. We will review it and get back to you within 24 hours.
+            </p>
+            <p className="text-gray-600 mt-2">
+              Gracias por enviar tu propiedad a Mexico Home Finder. La revisaremos y te responderemos en un plazo de 24 horas.
+            </p>
+            <p className="text-sm text-gray-400 mt-4">Redirecting to homepage... / Redirigiendo a la página principal...</p>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
       {/* Basic Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
@@ -1006,5 +1032,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
         </div>
       </div>
     </form>
+    </>
   );
 }
