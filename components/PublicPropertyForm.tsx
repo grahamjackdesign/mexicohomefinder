@@ -292,7 +292,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
         // Upload to Supabase Storage - using 'properties' bucket like BrokerLink
         const fileName = `public-listings/${userId}/${Date.now()}_${i}.jpg`;
         const { data, error } = await supabase.storage
-          .from('public_properties')
+          .from('properties')
           .upload(fileName, compressedFile, {
             cacheControl: '3600',
             upsert: false,
@@ -303,7 +303,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
         // Get public URL
         const { data: urlData } = supabase.storage
-          .from('public_properties')
+          .from('properties')
           .getPublicUrl(fileName);
 
         if (urlData?.publicUrl) {
@@ -384,13 +384,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .insert(propertyData);
         if (error) throw error;
       }
@@ -422,13 +422,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .insert(propertyData);
         if (error) throw error;
       }
