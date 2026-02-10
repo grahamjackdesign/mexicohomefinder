@@ -9,7 +9,10 @@ import HeroSlideshow from '@/components/HeroSlideshow';
 import PropertyCard from '@/components/PropertyCard';
 import ContactForm from '@/components/ContactForm';
 import { supabaseServer } from '@/lib/supabase';
-import { MapPin, Shield, Users, TrendingUp, Star, Home, ArrowRight } from 'lucide-react';
+import { client, urlFor } from '@/lib/sanity';
+import { MapPin, Shield, Users, TrendingUp, Star, Home, ArrowRight, Clock } from 'lucide-react';
+
+export const revalidate = 60;
 
 // Color Palette
 // Cream: #F5F1E8
@@ -67,6 +70,19 @@ const WHY_CHOOSE_US = [
   },
 ];
 
+// Sanity query for latest 4 blog posts
+const latestPostsQuery = `*[_type == "post"] | order(publishedAt desc)[0...4] {
+  _id,
+  title,
+  slug,
+  excerpt,
+  mainImage,
+  publishedAt,
+  categories[]->{
+    title
+  }
+}`;
+
 export default async function HomePage() {
   // Fetch featured properties (only approved for MHF)
   const { data: featuredProperties } = await supabaseServer
@@ -76,6 +92,9 @@ export default async function HomePage() {
     .eq('featured', true)
     .eq('show_on_mhf', true)
     .limit(6);
+
+  // Fetch latest 4 blog posts from Sanity
+  const latestPosts = await client.fetch(latestPostsQuery);
 
   return (
     <>
@@ -161,8 +180,90 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Buying Guide / Blog Section */}
+      <section id="buying-guide" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#2C4563' }}>
+              Buying <span style={{ color: '#C85A3E' }}>Guide</span>
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#2C4563', opacity: 0.7 }}>
+              Expert advice and insights to help you navigate buying property in Mexico
+            </p>
+          </div>
+
+          {latestPosts && latestPosts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {latestPosts.map((post: any) => (
+                <Link
+                  key={post._id}
+                  href={`/blog/${post.slug.current}`}
+                  className="group bg-white rounded-xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all hover:-translate-y-1"
+                >
+                  {post.mainImage && (
+                    <div className="relative aspect-[16/10]">
+                      <Image
+                        src={urlFor(post.mainImage).width(600).height(375).url()}
+                        alt={post.mainImage.alt || post.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      {post.categories && post.categories[0] && (
+                        <span className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wide rounded"
+                              style={{ backgroundColor: '#E8EEF4', color: '#2C4563' }}>
+                          {post.categories[0].title}
+                        </span>
+                      )}
+                      <span className="text-xs flex items-center gap-1" style={{ color: '#2C4563', opacity: 0.5 }}>
+                        <Clock className="w-3 h-3" />
+                        {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:transition-colors"
+                        style={{ color: '#2C4563' }}>
+                      {post.title}
+                    </h3>
+                    {post.excerpt && (
+                      <p className="text-sm line-clamp-2 mb-3" style={{ color: '#2C4563', opacity: 0.6 }}>
+                        {post.excerpt}
+                      </p>
+                    )}
+                    <span className="text-sm font-semibold flex items-center gap-1" style={{ color: '#C85A3E' }}>
+                      Read More
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center py-8" style={{ color: '#2C4563', opacity: 0.5 }}>
+              Blog posts coming soon!
+            </p>
+          )}
+
+          <div className="text-center mt-10">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold transition-all hover:shadow-lg"
+              style={{ backgroundColor: '#E8EEF4', color: '#2C4563' }}
+            >
+              View All Articles
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#F5F1E8' }}>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: '#2C4563' }}>
@@ -192,7 +293,7 @@ export default async function HomePage() {
 
           {/* Stats Bar */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 p-8 rounded-2xl"
-               style={{ backgroundColor: '#F5F1E8' }}>
+               style={{ backgroundColor: '#fff' }}>
             <div className="text-center">
               <div className="text-4xl font-bold mb-2" style={{ color: '#C85A3E' }}>
                 1,000+

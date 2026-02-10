@@ -49,7 +49,7 @@ export default function Header() {
                 Browse Properties
               </Link>
               <Link
-                href="#guides"
+                href="/#buying-guide"
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
               >
@@ -120,7 +120,7 @@ export default function Header() {
                 San Miguel de Allende
               </Link>
               <Link
-                href="#guides"
+                href="/#buying-guide"
                 className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
