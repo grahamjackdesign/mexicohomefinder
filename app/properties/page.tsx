@@ -167,15 +167,33 @@ async function getProperties(searchParams: SearchParams) {
   return { properties: propertiesEn, total: count || 0 };
 }
 
+async function getAllMapCoordinates() {
+  const { data } = await supabaseServer
+    .from('properties')
+    .select('id, title, title_en, price, currency, listing_type, bedrooms, bathrooms, sqft, neighborhood, images, latitude, longitude')
+    .eq('status', 'active')
+    .eq('show_on_mhf', true)
+    .not('latitude', 'is', null)
+    .not('longitude', 'is', null);
+
+  return (data || []).map((p: any) => ({
+    ...p,
+    title: p.title_en || p.title,
+    latitude: parseFloat(p.latitude),
+    longitude: parseFloat(p.longitude),
+  }));
+}
+
 export default async function PropertiesPage({
   searchParams,
 }: {
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const [{ properties, total }, { states, municipalities }] = await Promise.all([
+  const [{ properties, total }, { states, municipalities }, allMapProperties] = await Promise.all([
     getProperties(params),
     getAvailableLocations(),
+    getAllMapCoordinates(),
   ]);
 
   return (
@@ -195,6 +213,7 @@ export default async function PropertiesPage({
             searchParams={params}
             availableStates={states}
             availableMunicipalities={municipalities}
+            allMapProperties={allMapProperties}
           />
         </Suspense>
       </main>

@@ -42,6 +42,7 @@ type Props = {
   searchParams: SearchParams;
   availableStates: string[];
   availableMunicipalities: { state: string; municipality: string }[];
+  allMapProperties?: Property[];
 };
 
 const LISTING_TYPES = [
@@ -121,6 +122,7 @@ export default function PropertiesClient({
   searchParams,
   availableStates,
   availableMunicipalities,
+  allMapProperties,
 }: Props) {
   const router = useRouter();
   const urlSearchParams = useSearchParams();
@@ -164,10 +166,10 @@ export default function PropertiesClient({
   const currentPage = parseInt(searchParams.page || '1');
   const totalPages = Math.ceil(total / 20);
 
-  // Properties with coordinates for map
+  // Properties with coordinates for map - use all properties if available, otherwise paginated
   const propertiesWithCoords = useMemo(
-    () => properties.filter((p) => p.latitude && p.longitude),
-    [properties]
+    () => (allMapProperties || properties).filter((p) => p.latitude && p.longitude),
+    [allMapProperties, properties]
   );
 
   // Sort properties based on sortBy
