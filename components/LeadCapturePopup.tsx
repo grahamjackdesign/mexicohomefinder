@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { X, Download, CheckCircle } from 'lucide-react';
 
-const POPUP_DELAY_MS = 1000; // 30 seconds
+const POPUP_DELAY_MS = 45000; // 45 seconds
 const POPUP_STORAGE_KEY = 'mhf_popup_dismissed';
 const POPUP_COOLDOWN_DAYS = 7; // Don't show again for 7 days after dismissal
 
