@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import LeadCapturePopup from '@/components/LeadCapturePopup';
-// Inside the body:
-<LeadCapturePopup />
 
 export const metadata: Metadata = {
   title: {
@@ -64,6 +62,7 @@ export default function RootLayout({
       <body className="bg-white text-gray-900">
         <TranslationProvider>
           {children}
+          <LeadCapturePopup />
         </TranslationProvider>
       </body>
     </html>
