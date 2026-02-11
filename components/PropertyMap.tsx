@@ -134,7 +134,7 @@ export default function PropertyMap({ properties, hoveredProperty }: Props) {
             }}
             onClick={() => setSelectedProperty(property)}
             icon={{
-              url: '/MHF_map_pin.svg',
+              url: property.listing_type === 'rent' ? '/MHF_pin_rent.png' : '/MHF_pin_sale.png',
               scaledSize: new google.maps.Size(
                 isHovered || isSelected ? 55 : 40,
                 isHovered || isSelected ? 56 : 41
