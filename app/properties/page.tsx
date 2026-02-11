@@ -157,7 +157,14 @@ async function getProperties(searchParams: SearchParams) {
     return { properties: [], total: 0 };
   }
 
-  return { properties: data || [], total: count || 0 };
+  // Use English translations where available
+  const propertiesEn = (data || []).map((p: any) => ({
+    ...p,
+    title: p.title_en || p.title,
+    description: p.description_en || p.description,
+  }));
+
+  return { properties: propertiesEn, total: count || 0 };
 }
 
 export default async function PropertiesPage({
