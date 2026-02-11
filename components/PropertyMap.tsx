@@ -224,7 +224,7 @@ export default function PropertyMap({ properties, hoveredProperty }: Props) {
                   {selectedProperty.sqft && (
                     <span className="flex items-center gap-1">
                       <Square className="w-3 h-3" />
-                      {selectedProperty.sqft.toLocaleString()} sqft
+                      {selectedProperty.sqft.toLocaleString()} m²
                     </span>
                   )}
                 </div>
