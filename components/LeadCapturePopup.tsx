@@ -16,19 +16,27 @@ export default function LeadCapturePopup() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    console.log('🔔 LeadCapturePopup mounted');
+    
     // Check if popup was recently dismissed
     const dismissed = localStorage.getItem(POPUP_STORAGE_KEY);
     if (dismissed) {
       const dismissedDate = new Date(dismissed);
       const now = new Date();
       const daysSinceDismissed = (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+      console.log('🔔 Popup was dismissed', daysSinceDismissed.toFixed(1), 'days ago');
       if (daysSinceDismissed < POPUP_COOLDOWN_DAYS) {
+        console.log('🔔 Still in cooldown, not showing');
         return; // Don't show popup
       }
+    } else {
+      console.log('🔔 No previous dismissal found');
     }
 
     // Show popup after delay
+    console.log('🔔 Setting timer for', POPUP_DELAY_MS, 'ms');
     const timer = setTimeout(() => {
+      console.log('🔔 Showing popup now');
       setIsVisible(true);
     }, POPUP_DELAY_MS);
 
