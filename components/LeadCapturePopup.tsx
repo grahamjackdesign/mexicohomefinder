@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { X, Download, CheckCircle } from 'lucide-react';
 
-const POPUP_DELAY_MS = 30000; // 30 seconds
+const POPUP_DELAY_MS = 45000; // 30 seconds
 const POPUP_STORAGE_KEY = 'mhf_popup_dismissed';
 const POPUP_COOLDOWN_DAYS = 7; // Don't show again for 7 days after dismissal
 
@@ -165,7 +165,6 @@ export default function LeadCapturePopup() {
                   placeholder="Your first name"
                   required
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:border-transparent transition"
-                  style={{ focusRingColor: '#C85A3E' }}
                 />
                 <input
                   type="email"
