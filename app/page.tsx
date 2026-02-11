@@ -93,6 +93,13 @@ export default async function HomePage() {
     .eq('show_on_mhf', true)
     .limit(6);
 
+  // Use English translations where available
+  const featuredPropertiesEn = (featuredProperties || []).map((p: any) => ({
+    ...p,
+    title: p.title_en || p.title,
+    description: p.description_en || p.description,
+  }));
+
   // Fetch latest 4 blog posts from Sanity
   const latestPosts = await client.fetch(latestPostsQuery);
 
@@ -104,7 +111,7 @@ export default async function HomePage() {
       <HeroSlideshow />
 
       {/* Featured Properties */}
-      {featuredProperties && featuredProperties.length > 0 && (
+      {featuredPropertiesEn && featuredPropertiesEn.length > 0 && (
         <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
@@ -117,7 +124,7 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProperties.map((property) => (
+              {featuredPropertiesEn.map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
             </div>
