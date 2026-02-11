@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Script from 'next/script';
 import { TranslationProvider } from '@/components/TranslationProvider';
 import LeadCapturePopup from '@/components/LeadCapturePopup';
 
@@ -48,6 +49,18 @@ export default function RootLayout({
   return (
     <html lang="es">
       <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-P3HHGT94KC"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-P3HHGT94KC');
+          `}
+        </Script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
