@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Clock, Search } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { client, urlFor } from '@/lib/sanity';
 
 export const metadata = {
@@ -52,16 +52,7 @@ export default async function BlogPage() {
               <p className="text-xl text-white/90 mb-8">
                 Everything you need to know about buying, owning, and enjoying property in Mexico.
               </p>
-              
-              {/* Search Bar */}
-              <div className="relative max-w-xl">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search articles..."
-                  className="w-full pl-12 pr-4 py-4 rounded-xl bg-white/20 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-secondary"
-                />
-              </div>
+
             </div>
           </div>
         </section>
