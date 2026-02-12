@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Bed, Bath, Square, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -53,6 +53,38 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
     setCurrentImageIndex(index);
   };
 
+  // Touch swipe support
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diff) > minSwipeDistance) {
+      e.preventDefault();
+      if (diff > 0) {
+        // Swiped left - next image
+        setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+      } else {
+        // Swiped right - previous image
+        setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+      }
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
   return (
     <Link
       href={`/properties/${property.id}`}
@@ -61,7 +93,12 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
       onMouseLeave={() => onHover?.(null)}
     >
       {/* Image Container with Carousel */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-gray-100 group/carousel">
+      <div
+        className="relative aspect-[4/3] overflow-hidden bg-gray-100 group/carousel"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {images.length > 0 ? (
           <>
             <Image
@@ -77,14 +114,14 @@ export default function PropertyCard({ property, onHover, displayCurrency = 'USD
               <>
                 <button
                   onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 sm:opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 sm:opacity-0 group-hover/carousel:opacity-100 transition-opacity z-10"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5" />
