@@ -166,32 +166,73 @@ export default function PropertiesClient({
   const currentPage = parseInt(searchParams.page || '1');
   const totalPages = Math.ceil(total / 20);
 
-  // Properties with coordinates for map - apply current filters to all map properties
+  // Properties with coordinates for map - apply ALL current filters to map properties
   const propertiesWithCoords = useMemo(() => {
     let mapProps = allMapProperties || properties;
 
-    // Apply listing type filter (sale/rent)
+    // Listing type (sale/rent)
     if (searchParams.listingType) {
       mapProps = mapProps.filter((p: any) => p.listing_type === searchParams.listingType);
     }
 
-    // Apply property type filter
+    // Property type
     if (searchParams.type) {
       mapProps = mapProps.filter((p: any) => p.property_category === searchParams.type);
     }
 
-    // Apply state filter
+    // State
     if (searchParams.state) {
       mapProps = mapProps.filter((p: any) => p.state === searchParams.state);
     }
 
-    // Apply municipality filter
+    // Municipality
     if (searchParams.municipality) {
       mapProps = mapProps.filter((p: any) => p.municipality === searchParams.municipality);
     }
 
+    // Bedrooms
+    if (searchParams.beds) {
+      const minBeds = parseInt(searchParams.beds);
+      mapProps = mapProps.filter((p: any) => p.bedrooms >= minBeds);
+    }
+
+    // Bathrooms
+    if (searchParams.baths) {
+      const minBaths = parseInt(searchParams.baths);
+      mapProps = mapProps.filter((p: any) => p.bathrooms >= minBaths);
+    }
+
+    // Price range
+    if (searchParams.minPrice || searchParams.maxPrice) {
+      const priceField = searchParams.displayCurrency === 'MXN' ? 'price_mxn' : 'price_usd';
+      if (searchParams.minPrice) {
+        const min = parseInt(searchParams.minPrice);
+        mapProps = mapProps.filter((p: any) => (p[priceField] || 0) >= min);
+      }
+      if (searchParams.maxPrice) {
+        const max = parseInt(searchParams.maxPrice);
+        mapProps = mapProps.filter((p: any) => (p[priceField] || 0) <= max);
+      }
+    }
+
+    // Amenities
+    if (searchParams.pool === 'true') {
+      mapProps = mapProps.filter((p: any) => p.has_pool === true);
+    }
+    if (searchParams.ac === 'true') {
+      mapProps = mapProps.filter((p: any) => p.has_ac === true);
+    }
+    if (searchParams.pets === 'true') {
+      mapProps = mapProps.filter((p: any) => p.pets_allowed === true);
+    }
+
+    // Featured
+    if (searchParams.featured === 'true') {
+      mapProps = mapProps.filter((p: any) => p.featured === true);
+    }
+
     return mapProps.filter((p) => p.latitude && p.longitude);
-  }, [allMapProperties, properties, searchParams.listingType, searchParams.type, searchParams.state, searchParams.municipality]);
+  }, [allMapProperties, properties, searchParams]);
 
   // Sort properties based on sortBy
   const sortedProperties = useMemo(() => {
