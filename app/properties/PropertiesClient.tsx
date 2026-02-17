@@ -166,11 +166,32 @@ export default function PropertiesClient({
   const currentPage = parseInt(searchParams.page || '1');
   const totalPages = Math.ceil(total / 20);
 
-  // Properties with coordinates for map - use all properties if available, otherwise paginated
-  const propertiesWithCoords = useMemo(
-    () => (allMapProperties || properties).filter((p) => p.latitude && p.longitude),
-    [allMapProperties, properties]
-  );
+  // Properties with coordinates for map - apply current filters to all map properties
+  const propertiesWithCoords = useMemo(() => {
+    let mapProps = allMapProperties || properties;
+
+    // Apply listing type filter (sale/rent)
+    if (searchParams.listingType) {
+      mapProps = mapProps.filter((p: any) => p.listing_type === searchParams.listingType);
+    }
+
+    // Apply property type filter
+    if (searchParams.type) {
+      mapProps = mapProps.filter((p: any) => p.property_category === searchParams.type);
+    }
+
+    // Apply state filter
+    if (searchParams.state) {
+      mapProps = mapProps.filter((p: any) => p.state === searchParams.state);
+    }
+
+    // Apply municipality filter
+    if (searchParams.municipality) {
+      mapProps = mapProps.filter((p: any) => p.municipality === searchParams.municipality);
+    }
+
+    return mapProps.filter((p) => p.latitude && p.longitude);
+  }, [allMapProperties, properties, searchParams.listingType, searchParams.type, searchParams.state, searchParams.municipality]);
 
   // Sort properties based on sortBy
   const sortedProperties = useMemo(() => {
