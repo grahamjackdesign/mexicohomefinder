@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState, useMemo, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { Property } from '@/lib/supabase';
 import Link from 'next/link';
@@ -84,6 +84,33 @@ export default function PropertyMap({ properties, hoveredProperty }: Props) {
     },
     [properties]
   );
+
+  // Re-fit bounds when filtered properties change
+  useEffect(() => {
+    if (!map) return;
+
+    if (properties.length > 0) {
+      const bounds = new google.maps.LatLngBounds();
+      properties.forEach((property) => {
+        if (property.latitude && property.longitude) {
+          bounds.extend({
+            lat: property.latitude,
+            lng: property.longitude,
+          });
+        }
+      });
+      map.fitBounds(bounds, {
+        top: 50,
+        right: 50,
+        bottom: 50,
+        left: 50,
+      });
+    } else {
+      // No properties — reset to default Mexico view
+      map.setCenter(defaultCenter);
+      map.setZoom(5);
+    }
+  }, [map, properties]);
 
   const formatPrice = (price: number, currency?: string) => {
     const currencyLabel = currency === 'MXN' ? 'MXN' : 'USD';
