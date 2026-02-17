@@ -170,7 +170,7 @@ async function getProperties(searchParams: SearchParams) {
 async function getAllMapCoordinates() {
   const { data } = await supabaseServer
     .from('properties')
-    .select('id, title, title_en, price, currency, listing_type, bedrooms, bathrooms, sqft, neighborhood, images, latitude, longitude')
+    .select('id, title, title_en, price, currency, listing_type, property_category, state, municipality, bedrooms, bathrooms, sqft, neighborhood, images, latitude, longitude')
     .eq('status', 'active')
     .eq('show_on_mhf', true)
     .not('latitude', 'is', null)
