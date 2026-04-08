@@ -31,15 +31,27 @@ export default defineType({
       name: 'mainImage',
       title: 'Main Image',
       type: 'image',
-      options: {
-        hotspot: true,
-      },
+      options: { hotspot: true },
       fields: [
         {
           name: 'alt',
           type: 'string',
           title: 'Alt text',
           description: 'Important for SEO and accessibility',
+        },
+      ],
+    }),
+    defineField({
+      name: 'ogImage',
+      title: 'OG / Social Share Image',
+      type: 'image',
+      description: 'Used for social sharing previews. Recommended size: 1200x630px. If left blank, main image will be used.',
+      options: { hotspot: true },
+      fields: [
+        {
+          name: 'alt',
+          type: 'string',
+          title: 'Alt text',
         },
       ],
     }),
@@ -68,14 +80,10 @@ export default defineType({
       title: 'Body',
       type: 'array',
       of: [
-        {
-          type: 'block',
-        },
+        { type: 'block' },
         {
           type: 'image',
-          options: {
-            hotspot: true,
-          },
+          options: { hotspot: true },
           fields: [
             {
               name: 'alt',
@@ -85,6 +93,32 @@ export default defineType({
           ],
         },
       ],
+    }),
+    // SEO Fields
+    defineField({
+      name: 'metaTitle',
+      title: 'Meta Title',
+      type: 'string',
+      description: 'Override the page title for SEO. If blank, post title is used. Keep under 60 chars.',
+      validation: (Rule) => Rule.max(60),
+    }),
+    defineField({
+      name: 'metaDescription',
+      title: 'Meta Description',
+      type: 'text',
+      rows: 3,
+      description: 'Override the meta description. If blank, excerpt is used. Keep under 160 chars.',
+      validation: (Rule) => Rule.max(160),
+    }),
+    defineField({
+      name: 'keywords',
+      title: 'Keywords / Tags',
+      type: 'array',
+      of: [{type: 'string'}],
+      options: {
+        layout: 'tags',
+      },
+      description: 'Add relevant keywords for internal organisation and topic clustering.',
     }),
     defineField({
       name: 'featured',

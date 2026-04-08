@@ -19,9 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .single();
 
   if (!property) {
-    return {
-      title: 'Property Not Found',
-    };
+    return { title: 'Property Not Found' };
   }
 
   const title = property.title_en || property.title;
@@ -59,14 +57,12 @@ export default async function PropertyDetailPage({ params }: Props) {
     notFound();
   }
 
-  // Use English translations where available
   const propertyEn = {
     ...property,
     title: property.title_en || property.title,
     description: property.description_en || property.description,
   };
 
-  // Get similar properties
   const { data: similarData } = await supabaseServer
     .from('properties')
     .select('*')
@@ -77,15 +73,64 @@ export default async function PropertyDetailPage({ params }: Props) {
     .lte('price', property.price * 1.3)
     .limit(4);
 
-  // Map English translations for similar properties too
   const similarProperties = (similarData || []).map((p: any) => ({
     ...p,
     title: p.title_en || p.title,
     description: p.description_en || p.description,
   }));
 
+  // --- JSON-LD Schema ---
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mexicohomefinder.com';
+  const title = property.title_en || property.title;
+  const description = property.description_en || property.description;
+  const location = property.neighborhood || property.municipality || 'San Miguel de Allende';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: title,
+    description: description?.slice(0, 500) || '',
+    url: `${siteUrl}/properties/${id}`,
+    datePosted: property.created_at,
+    ...(property.images?.[0] && {
+      image: property.images,
+    }),
+    offers: {
+      '@type': 'Offer',
+      price: property.price,
+      priceCurrency: property.currency || 'USD',
+      availability: 'https://schema.org/InStock',
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: location,
+      addressRegion: property.state || 'Guanajuato',
+      addressCountry: 'MX',
+    },
+    ...(property.latitude && property.longitude && {
+      geo: {
+        '@type': 'GeoCoordinates',
+        latitude: property.latitude,
+        longitude: property.longitude,
+      },
+    }),
+    numberOfRooms: property.bedrooms || undefined,
+    numberOfBathroomsTotal: property.bathrooms || undefined,
+    floorSize: property.sqft
+      ? {
+          '@type': 'QuantitativeValue',
+          value: property.sqft,
+          unitCode: 'MTK',
+        }
+      : undefined,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       <main className="pt-16 sm:pt-18">
         <PropertyDetailClient
