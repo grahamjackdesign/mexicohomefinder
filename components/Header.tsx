@@ -4,14 +4,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import ListPropertyModal from './ListPropertyModal';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [listModalOpen, setListModalOpen] = useState(false);
   const pathname = usePathname();
-  
+  const router = useRouter();
+
   // Check if we're on the homepage
   const isHomePage = pathname === '/';
 
@@ -63,12 +64,12 @@ export default function Header() {
                 Contact
               </Link>
               <button
-                onClick={() => setListModalOpen(true)}
-                className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
-                style={{ backgroundColor: '#C85A3E' }}
-              >
-                Create Listing(s)
-              </button>
+              onClick={() => router.push('/list-property/register')}
+              className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
+              style={{ backgroundColor: '#C85A3E' }}
+            >
+              Create Listing(s)
+            </button>
               <Link
                 href="/list-property/login"
                 className="ml-1 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
