@@ -67,7 +67,7 @@ export default function Header() {
                 className="ml-2 px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:brightness-110 text-white"
                 style={{ backgroundColor: '#C85A3E' }}
               >
-                List Your Property
+                Create Listing(s)
               </button>
               <Link
                 href="/list-property/login"
@@ -144,7 +144,7 @@ export default function Header() {
                   className="block w-full px-4 py-3 rounded-lg font-semibold text-center text-white"
                   style={{ backgroundColor: '#C85A3E' }}
                 >
-                  List Your Property
+                  Create Listing(s)
                 </button>
                 <Link
                   href="/list-property/login"

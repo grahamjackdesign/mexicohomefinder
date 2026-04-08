@@ -117,10 +117,11 @@ type Props = {
   userId: string;
   userEmail: string;
   userName: string;
+  userPhone?: string;
   existingProperty?: any;
 };
 
-export default function PublicPropertyForm({ userId, userEmail, userName, existingProperty }: Props) {
+export default function PublicPropertyForm({ userId, userEmail, userName, userPhone, existingProperty }: Props) {
   const { t } = useTranslations();
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -129,6 +130,21 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const [agentUserId, setAgentUserId] = useState<string | null>(existingProperty?.agent_user_id || null);
+
+  useEffect(() => {
+    if (!agentUserId) {
+      supabase
+        .from('agent_users')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+        .then(({ data }) => {
+          if (data) setAgentUserId(data.id);
+        });
+    }
+  }, [userId]);
 
   // DnD sensors for photo reorder
   const sensors = useSensors(
@@ -181,7 +197,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     // Contact
     contact_name: existingProperty?.contact_name || userName || '',
     contact_email: existingProperty?.contact_email || userEmail || '',
-    contact_phone: existingProperty?.contact_phone || '',
+    contact_phone: existingProperty?.contact_phone || userPhone || '',
     // Extended amenities
     has_spa: existingProperty?.has_spa || false,
     has_jacuzzi: existingProperty?.has_jacuzzi || false,
@@ -327,7 +343,9 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   // Build property data for save
   const buildPropertyData = (status: 'draft' | 'pending') => {
     return {
-      user_id: userId,
+      agent_user_id: agentUserId,
+      site: 'mexico-home-finder',
+      approval_status: status === 'pending' ? 'pending' : 'draft',
       title: formData.title,
       description: formData.description,
       security: formData.security,
@@ -385,13 +403,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .insert(propertyData);
         if (error) throw error;
       }
@@ -409,8 +427,8 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     e.preventDefault();
 
     // Validate at least one photo
-    if (images.length === 0) {
-      setError('Please upload at least one photo of your property. Listings without photos cannot be accepted.');
+    if (images.length < 4) {
+  setError('Please upload at least 4 photos of your property. Listings without enough photos cannot be accepted.');
       document.getElementById('photos-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -423,21 +441,37 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
       if (existingProperty?.id) {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .update(propertyData)
           .eq('id', existingProperty.id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('public_properties')
+          .from('properties')
           .insert(propertyData);
         if (error) throw error;
       }
 
+      // Fire notification email
+      await fetch('/api/admin/notify-submission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          neighborhood: formData.neighborhood,
+          state: selectedState,
+          contact_name: formData.contact_name,
+          contact_email: formData.contact_email,
+          contact_phone: formData.contact_phone,
+          price: formData.price,
+          currency: formData.currency,
+        }),
+      })
+
       setShowSuccess(true);
       setTimeout(() => {
-        window.location.href = 'https://mexicohomefinder.com';
-      }, 5000);
+        window.location.href = '/list-property/dashboard';
+      }, 2000);
     } catch (err: any) {
       console.error('Error submitting property:', err);
       console.error('Error details:', JSON.stringify(err, null, 2));

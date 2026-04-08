@@ -24,7 +24,7 @@
       "resubmit": "Actualiza y reenvía tu propiedad"
     },
     "pageSubtitle": {
-      "new": "Completa los datos a continuación para publicar tu propiedad en MexicoHomeFinder.",
+      "new": "Completa los datos a continuación para publicar tu propiedad en MexicoHomeFinder. Necesitamos revisar tu listado antes de que esté activo para asegurarnos de que se presente bien a nuestros clientes. Gracias por tu comprensión.",
       "edit": "Actualiza los datos de tu propiedad a continuación.",
       "resubmit": "Por favor atiende los comentarios anteriores, realiza los cambios y envía nuevamente."
     }
@@ -63,7 +63,7 @@
     "coordinatesExtracted": "Coordenadas extraídas",
     "photos": "Fotos",
     "uploadPhotos": "Subir fotos",
-    "uploadHint": "Sube fotos de alta calidad. La primera foto será la imagen principal. Arrastra para reordenar.",
+    "uploadHint": "OBLIGATORIO. Por favor sube MIN. 4 fotos de alta calidad. La primera foto será la imagen principal. Puedes arrastrar para reordenar.",
     "selectType": "Seleccionar tipo...",
     "selectState": "Seleccionar estado...",
     "selectStateFirst": "Selecciona el estado primero",

@@ -19,12 +19,12 @@
       "resubmitHint": "Make the necessary changes below and submit again for review."
     },
     "pageTitle": {
-      "new": "List Your Property",
-      "edit": "Edit Your Property",
-      "resubmit": "Update & Resubmit Your Property"
+      "new": "List a Property",
+      "edit": "Edit Property",
+      "resubmit": "Update & Resubmit the Property"
     },
     "pageSubtitle": {
-      "new": "Fill in the details below to list your property on MexicoHomeFinder.",
+      "new": "Fill in the details below to list a property on MexicoHomeFinder. We will need to review your listing before it goes live so that it is presented well to our clients. Thank you for your understanding.",
       "edit": "Update your property details below.",
       "resubmit": "Please address the feedback above, make changes, and submit again."
     }
@@ -63,7 +63,7 @@
     "coordinatesExtracted": "Coordinates extracted",
     "photos": "Photos",
     "uploadPhotos": "Add Photos",
-    "uploadHint": "Upload high-quality photos. The first photo will be the main image. Drag to reorder.",
+    "uploadHint": "MANDATORY. Please upload MIN. 4 high-quality photos. The first photo will be the main image. You can drag to reorder.",
     "selectType": "Select type...",
     "selectState": "Select state...",
     "selectStateFirst": "Select state first",
@@ -102,7 +102,8 @@
     "optional": "Optional",
     "errorImageUpload": "Error uploading image",
     "photoRequirement": "At least one photo is required",
-    "morePhotosNeeded": "more photos needed"
+    "morePhotosNeeded": "more photos needed",
+    "successTitle": "Property submitted successfully!"
   },
   "common": {
     "loading": "Loading...",

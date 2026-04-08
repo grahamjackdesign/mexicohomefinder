@@ -16,6 +16,7 @@
     "@react-google-maps/api": "^2.20.8",
     "@sanity/image-url": "^1.2.0",
     "@sanity/vision": "^4.22.0",
+    "@stripe/stripe-js": "^9.1.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.76.1",
     "browser-image-compression": "^2.0.2",
@@ -24,8 +25,9 @@
     "next-sanity": "^11.6.12",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "resend": "^6.5.2",
+    "resend": "^6.10.0",
     "sanity": "^4.22.0",
+    "stripe": "^22.0.0",
     "styled-components": "^6.3.8"
   },
   "devDependencies": {
