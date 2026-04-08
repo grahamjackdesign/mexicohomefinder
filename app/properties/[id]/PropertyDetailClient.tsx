@@ -9,7 +9,6 @@ import LeadForm from '@/components/LeadForm';
 import {
   ChevronLeft,
   ChevronRight,
-  Heart,
   Share2,
   Bed,
   Bath,
@@ -24,6 +23,7 @@ import {
   Shield,
   Building2,
   X,
+  Check,
 } from 'lucide-react';
 
 type Props = {
@@ -37,7 +37,7 @@ export default function PropertyDetailClient({
 }: Props) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showGallery, setShowGallery] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const images = property.images || [];
   const hasMultipleImages = images.length > 1;
@@ -205,17 +205,15 @@ export default function PropertyDetailClient({
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-sm text-gray-600"
                 >
-                  <Heart
-                    className={`w-5 h-5 ${
-                      isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'
-                    }`}
-                  />
-                </button>
-                <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  <Share2 className="w-5 h-5 text-gray-600" />
+                  {copied ? <Check className="w-4 h-4 text-green-600" /> : <Share2 className="w-4 h-4" />}
+                  {copied ? 'Copied!' : 'Share'}
                 </button>
               </div>
             </div>

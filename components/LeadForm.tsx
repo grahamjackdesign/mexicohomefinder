@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Property } from '@/lib/supabase';
-import { Send, Phone, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { Send, Mail, CheckCircle, Loader2 } from 'lucide-react';
 
 type Props = {
   property: Property;
@@ -203,7 +203,8 @@ export default function LeadForm({ property }: Props) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-4 bg-secondary hover:bg-secondary-dark disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full py-4 disabled:bg-gray-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2 hover:brightness-110"
+          style={{ backgroundColor: '#C1714F' }}
         >
           {isSubmitting ? (
             <>
@@ -228,22 +229,13 @@ export default function LeadForm({ property }: Props) {
         <p className="text-sm text-gray-500 mb-4 text-center">
           Or contact us directly:
         </p>
-        <div className="flex gap-3">
-          <a
-            href="tel:+521234567890"
-            className="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
-          >
-            <Phone className="w-4 h-4" />
-            Call
-          </a>
-          <a
-            href="mailto:info@mexicohomefinder.com"
-            className="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
-          >
-            <Mail className="w-4 h-4" />
-            Email
-          </a>
-        </div>
+        <a
+          href="mailto:info@mexicohomefinder.com"
+          className="flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
+        >
+          <Mail className="w-4 h-4" />
+          Email
+        </a>
       </div>
     </div>
   );

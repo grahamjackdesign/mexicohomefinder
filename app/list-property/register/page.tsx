@@ -163,16 +163,17 @@ export default function RegisterPage() {
   // Success state
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-light to-primary flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #C1714F 0%, #a85a3a 100%)' }}>
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-primary mb-4">{t.successTitle}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t.successTitle}</h1>
           <p className="text-gray-600 mb-8">{t.successMessage}</p>
           <Link
             href="/list-property/login"
-            className="inline-block w-full py-3 bg-secondary hover:bg-secondary-dark text-white font-semibold rounded-xl transition-colors"
+            className="inline-block w-full py-3 text-white font-semibold rounded-xl transition-colors hover:brightness-110"
+            style={{ backgroundColor: '#C1714F' }}
           >
             {t.goToLogin}
           </Link>
@@ -182,10 +183,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary-light to-primary flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(135deg, #C1714F 0%, #a85a3a 100%)' }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
         {/* Header */}
-        <div className="bg-primary px-6 py-5">
+        <div className="px-6 py-5" style={{ backgroundColor: '#C1714F' }}>
           <div className="flex items-center justify-between mb-4">
             <Link
               href="/"
@@ -398,11 +399,11 @@ export default function RegisterPage() {
             />
             <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
               {t.termsPrefix}{' '}
-              <Link href="/terms" className="text-secondary hover:underline">
+              <Link href="/terms" style={{ color: '#C1714F' }} className="hover:underline">
                 {t.terms}
               </Link>{' '}
               {t.termsAnd}{' '}
-              <Link href="/privacy" className="text-secondary hover:underline">
+              <Link href="/privacy" style={{ color: '#C1714F' }} className="hover:underline">
                 {t.privacy}
               </Link>
             </label>
@@ -412,7 +413,8 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-secondary hover:bg-secondary-dark disabled:bg-secondary/50 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 text-white font-semibold rounded-xl transition-colors hover:brightness-110 disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ backgroundColor: '#C1714F' }}
           >
             {isLoading ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -424,7 +426,7 @@ export default function RegisterPage() {
           {/* Sign In Link */}
           <p className="text-center text-sm text-gray-600">
             {t.alreadyHave}{' '}
-            <Link href="/list-property/login" className="text-secondary hover:underline font-medium">
+            <Link href="/list-property/login" className="font-medium hover:underline" style={{ color: '#C1714F' }}>
               {t.signIn}
             </Link>
           </p>
