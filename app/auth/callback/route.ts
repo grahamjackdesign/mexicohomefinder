@@ -37,6 +37,11 @@ export async function GET(req: NextRequest) {
 
   const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
 
+  console.log('Auth callback - origin:', origin)
+  console.log('Auth callback - code:', !!code)
+  console.log('Auth callback - session:', !!session)
+  console.log('Auth callback - error:', error)
+
   if (error || !session) {
     console.error('Auth callback error:', error)
     return NextResponse.redirect(`${origin}/list-property/login?error=auth_failed`)
