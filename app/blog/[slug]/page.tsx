@@ -8,7 +8,6 @@ import { client } from '@/sanity/lib/client';
 import { urlFor } from '@/sanity/lib/image';
 import { PortableText } from '@portabletext/react';
 
-// Generate static params for all blog posts
 export async function generateStaticParams() {
   try {
     const posts = await client.fetch(`*[_type == "post"]{ "slug": slug.current }`);
@@ -21,7 +20,6 @@ export async function generateStaticParams() {
   }
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({ 
   params 
 }: { 
@@ -32,20 +30,46 @@ export async function generateMetadata({
   const post = await client.fetch(
     `*[_type == "post" && slug.current == $slug][0]{
       title,
-      excerpt
+      excerpt,
+      metaTitle,
+      metaDescription,
+      mainImage,
+      ogImage
     }`,
     { slug }
   );
 
   if (!post) {
-    return {
-      title: 'Post Not Found | MexicoHomeFinder',
-    };
+    return { title: 'Post Not Found | MexicoHomeFinder' };
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mexicohomefinder.com';
+  const metaTitle = post.metaTitle || `${post.title} | MexicoHomeFinder`;
+  const metaDescription = post.metaDescription || post.excerpt;
+
+  // Use ogImage if set, fall back to mainImage
+  const ogImageSource = post.ogImage || post.mainImage;
+  const ogImageUrl = ogImageSource
+    ? urlFor(ogImageSource).width(1200).height(630).url()
+    : null;
+
   return {
-    title: `${post.title} | MexicoHomeFinder`,
-    description: post.excerpt,
+    title: metaTitle,
+    description: metaDescription,
+    openGraph: {
+      title: metaTitle,
+      description: metaDescription,
+      url: `${siteUrl}/blog/${slug}`,
+      ...(ogImageUrl && {
+        images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+      }),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: metaTitle,
+      description: metaDescription,
+      ...(ogImageUrl && { images: [ogImageUrl] }),
+    },
   };
 }
 
@@ -56,7 +80,6 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params;
   
-  // Fetch the blog post from Sanity
   const post = await client.fetch(
     `*[_type == "post" && slug.current == $slug][0]{
       _id,
@@ -78,12 +101,10 @@ export default async function BlogPostPage({
     { slug }
   );
 
-  // If no post found, show 404
   if (!post) {
     notFound();
   }
 
-  // Fetch related posts (from same category or just recent)
   const relatedPosts = await client.fetch(
     `*[_type == "post" && slug.current != $slug][0...3]{
       title,
@@ -100,12 +121,40 @@ export default async function BlogPostPage({
 
   const readTime = post.estimatedReadingTime || 5;
 
+  // JSON-LD for blog post
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mexicohomefinder.com';
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || '',
+    url: `${siteUrl}/blog/${slug}`,
+    datePublished: post.publishedAt,
+    ...(post.author?.name && {
+      author: {
+        '@type': 'Person',
+        name: post.author.name,
+      },
+    }),
+    ...(post.mainImage && {
+      image: urlFor(post.mainImage).width(1200).height(630).url(),
+    }),
+    publisher: {
+      '@type': 'Organization',
+      name: 'Mexico Home Finder',
+      url: siteUrl,
+    },
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
       
       <main className="pt-16">
-        {/* Hero Section */}
         <article className="relative">
           {/* Featured Image */}
           <div className="relative h-[60vh] md:h-[70vh]">
@@ -122,7 +171,6 @@ export default async function BlogPostPage({
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
             
-            {/* Breadcrumb & Actions */}
             <div className="absolute top-0 left-0 right-0 p-6 md:p-8">
               <div className="max-w-4xl mx-auto flex items-center justify-between">
                 <Link 
@@ -132,7 +180,6 @@ export default async function BlogPostPage({
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                   Back to Blog
                 </Link>
-                
                 <div className="flex items-center gap-3">
                   <button className="p-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors text-white">
                     <Share2 className="w-5 h-5" />
@@ -144,7 +191,6 @@ export default async function BlogPostPage({
               </div>
             </div>
 
-            {/* Title & Meta */}
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
               <div className="max-w-4xl mx-auto">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -198,14 +244,12 @@ export default async function BlogPostPage({
           {/* Article Content */}
           <div className="bg-white">
             <div className="max-w-4xl mx-auto px-6 md:px-8 py-16">
-              {/* Lead Paragraph */}
               {post.excerpt && (
                 <div className="text-xl text-gray-700 leading-relaxed mb-12 font-light border-l-4 border-secondary pl-6">
                   {post.excerpt}
                 </div>
               )}
 
-              {/* Main Content */}
               <div className="prose prose-lg max-w-none 
                 prose-headings:font-display prose-headings:font-bold prose-headings:text-primary 
                 prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6 
@@ -223,13 +267,10 @@ export default async function BlogPostPage({
                   value={post.body}
                   components={{
                     block: {
-                      // Headings
                       h2: ({children}) => <h2 className="text-3xl font-bold text-primary mt-12 mb-6">{children}</h2>,
                       h3: ({children}) => <h3 className="text-2xl font-bold text-primary mt-8 mb-4">{children}</h3>,
                       h4: ({children}) => <h4 className="text-xl font-bold text-primary mt-6 mb-3">{children}</h4>,
-                      // Paragraphs
                       normal: ({children}) => <p className="text-gray-700 leading-relaxed mb-6">{children}</p>,
-                      // Blockquotes
                       blockquote: ({children}) => (
                         <blockquote className="border-l-4 border-secondary pl-6 my-6 italic text-gray-600">
                           {children}
@@ -297,7 +338,6 @@ export default async function BlogPostPage({
                 <h2 className="text-3xl md:text-4xl font-display font-bold text-primary mb-10">
                   Related Articles
                 </h2>
-                
                 <div className="grid md:grid-cols-3 gap-8">
                   {relatedPosts.map((relatedPost: any) => (
                     <Link
