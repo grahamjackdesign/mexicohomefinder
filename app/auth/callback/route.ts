@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/list-property/login?error=no_code`)
   }
 
-  // Exchange code for session
   const { createServerClient } = await import('@supabase/ssr')
   const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
@@ -37,11 +36,6 @@ export async function GET(req: NextRequest) {
 
   const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
 
-  console.log('Auth callback - origin:', origin)
-  console.log('Auth callback - code:', !!code)
-  console.log('Auth callback - session:', !!session)
-  console.log('Auth callback - error:', error)
-
   if (error || !session) {
     console.error('Auth callback error:', error)
     return NextResponse.redirect(`${origin}/list-property/login?error=auth_failed`)
@@ -49,7 +43,6 @@ export async function GET(req: NextRequest) {
 
   const user = session.user
 
-  // Check if agent_users row already exists
   const { data: existingUser } = await supabaseAdmin
     .from('agent_users')
     .select('id')
@@ -57,6 +50,7 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (!existingUser) {
+    // New user — create agent_users row then send to onboarding
     const fullName = user.user_metadata?.name || user.user_metadata?.full_name || ''
 
     const { error: insertError } = await supabaseAdmin
@@ -72,7 +66,10 @@ export async function GET(req: NextRequest) {
     if (insertError) {
       console.error('Error creating agent_user:', insertError)
     }
+
+    return NextResponse.redirect(`${origin}/list-property/onboarding`)
   }
 
+  // Existing user — straight to dashboard
   return NextResponse.redirect(`${origin}/list-property/dashboard`)
 }
