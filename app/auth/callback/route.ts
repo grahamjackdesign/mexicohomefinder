@@ -16,6 +16,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/list-property/login?error=no_code`)
   }
 
+  // For password recovery, pass the code to the reset page to exchange client-side
+  // This ensures the session is established in the browser, not the server
+  if (type === 'recovery') {
+    return NextResponse.redirect(`${origin}/list-property/reset-password?code=${code}`)
+  }
+
   const { createServerClient } = await import('@supabase/ssr')
   const { cookies } = await import('next/headers')
   const cookieStore = await cookies()
@@ -42,11 +48,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/list-property/login?error=auth_failed`)
   }
 
-  // Password recovery flow — send straight to reset password page
-  if (type === 'recovery') {
-    return NextResponse.redirect(`${origin}/list-property/reset-password`)
-  }
-
   const user = session.user
 
   const { data: existingUser } = await supabaseAdmin
@@ -56,7 +57,6 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (!existingUser) {
-    // New user — create agent_users row then send to onboarding
     const fullName = user.user_metadata?.name || user.user_metadata?.full_name || ''
 
     const { error: insertError } = await supabaseAdmin
@@ -76,6 +76,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${origin}/list-property/onboarding`)
   }
 
-  // Existing user — straight to dashboard
   return NextResponse.redirect(`${origin}/list-property/dashboard`)
 }
