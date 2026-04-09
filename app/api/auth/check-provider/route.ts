@@ -14,24 +14,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ provider: 'unknown' }, { status: 400 });
     }
 
-    // Use admin client to look up the user by email
-    const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+    // Direct lookup by email — avoids pagination issues with listUsers()
+    const { data: { user }, error } = await supabaseAdmin.auth.admin.getUserByEmail(email);
 
-    if (error) {
-      console.error('check-provider: listUsers error=', error);
-      return NextResponse.json({ provider: 'unknown' });
-    }
-
-    const user = data.users.find((u) => u.email === email);
     console.log('check-provider: email=', email, 'user found=', !!user, 'identities=', user?.identities);
 
-    if (!user) {
-      // Don't reveal whether the email exists — just treat as email user
+    if (error || !user) {
+      // Don't reveal whether the email exists — treat as email user
       // so the reset email flow runs (Supabase handles non-existent emails gracefully)
       return NextResponse.json({ provider: 'email' });
     }
 
-    // Check the identities array for the provider
     const googleIdentity = user.identities?.find((i) => i.provider === 'google');
     const provider = googleIdentity ? 'google' : 'email';
 
