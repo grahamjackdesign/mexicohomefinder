@@ -59,17 +59,6 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      // Check if this email belongs to a Google user
-      const { data: { methods }, error: methodsError } = await supabase.auth.getOAuthToken({} as any).catch(() => ({ data: { methods: null }, error: null }));
-
-      // Use signInWithOtp as a probe — instead, check via admin or use a workaround:
-      // We attempt a password reset and check the response, but first
-      // try to detect Google users by attempting sign-in with a dummy password
-      // and checking the error code. The cleanest approach is to just send the
-      // reset email and let Supabase handle it — but we also check using
-      // fetchSignInMethodsForEmail if available. Since Supabase JS v2 doesn't
-      // expose this directly on the client, we use our own API route to check.
-
       const checkRes = await fetch('/api/auth/check-provider', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
