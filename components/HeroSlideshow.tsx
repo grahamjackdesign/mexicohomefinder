@@ -22,19 +22,17 @@ const KB_DIRECTIONS = [
   { startTransform: 'scale(1) translate(-2%, 0%)',      endTransform: 'scale(1.15) translate(2%, -3%)' },
 ];
 
-const SLIDE_DURATION = 6000;  // Time each slide is shown
-const FADE_DURATION = 2000;   // Crossfade duration in ms
-const KB_DURATION = 10000;    // Ken Burns pan duration in ms
+const SLIDE_DURATION = 6000;
+const FADE_DURATION = 2000;
+const KB_DURATION = 10000;
 
 export default function HeroSlideshow() {
   const [activeIndex, setActiveIndex] = useState(0);
-  // Each slide gets its own opacity and transform, managed independently
   const [slides, setSlides] = useState(() =>
     HERO_IMAGES.map((_, i) => ({
       opacity: i === 0 ? 1 : 0,
       transform: KB_DIRECTIONS[i].startTransform,
       zIndex: i === 0 ? 2 : 1,
-      // Ken Burns: transition the transform over KB_DURATION
       transitioning: i === 0,
     }))
   );
@@ -51,24 +49,20 @@ export default function HeroSlideshow() {
     setSlides((prev) =>
       prev.map((slide, i) => {
         if (i === nextIndex) {
-          // Incoming slide: reset transform to start, then we'll kick off Ken Burns
           return {
             opacity: 0,
             transform: KB_DIRECTIONS[i].startTransform,
-            zIndex: 3, // On top during fade
+            zIndex: 3,
             transitioning: false,
           };
         }
         if (i === prevIndex) {
-          // Outgoing slide: keep its current state, just ensure it's behind
           return { ...slide, zIndex: 2 };
         }
-        // All others: hidden
         return { ...slide, opacity: 0, zIndex: 1 };
       })
     );
 
-    // After a frame, start the fade-in AND Ken Burns on the new slide
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setSlides((prev) =>
@@ -87,7 +81,6 @@ export default function HeroSlideshow() {
       });
     });
 
-    // After fade completes, clean up the old slide
     setTimeout(() => {
       setSlides((prev) =>
         prev.map((slide, i) => {
@@ -271,6 +264,21 @@ export default function HeroSlideshow() {
               </span>
             </div>
           </div>
+
+          {/* Quicklist CTA */}
+          <div
+            className="mt-6 hero-fade-in"
+            style={{ animationDelay: '0.5s' }}
+          >
+            <a
+              href="/list-property"
+              className="quicklist-btn inline-flex items-center gap-3 px-6 py-3 rounded-full font-semibold text-white text-sm transition-all hover:brightness-110 hover:scale-105"
+              style={{ backgroundColor: '#C85A3E' }}
+            >
+              <span className="w-2 h-2 bg-white rounded-full opacity-90 flex-shrink-0" />
+              List Your Property Free — Quicklist
+            </a>
+          </div>
         </div>
       </div>
 
@@ -299,7 +307,6 @@ export default function HeroSlideshow() {
         }}
       />
 
-      {/* Minimal global styles - only for the page-load fade-in animation */}
       <style jsx global>{`
         @keyframes heroFadeInUp {
           from {
@@ -313,6 +320,21 @@ export default function HeroSlideshow() {
         }
         .hero-fade-in {
           animation: heroFadeInUp 0.8s ease-out forwards;
+          opacity: 0;
+        }
+        @keyframes pulse-ring {
+          0% {
+            box-shadow: 0 0 0 0 rgba(200, 90, 62, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 14px rgba(200, 90, 62, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(200, 90, 62, 0);
+          }
+        }
+        .quicklist-btn {
+          animation: heroFadeInUp 0.8s ease-out 0.5s forwards, pulse-ring 2s ease-out 1.5s infinite;
           opacity: 0;
         }
       `}</style>
