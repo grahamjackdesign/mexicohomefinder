@@ -14,37 +14,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ provider: 'unknown' }, { status: 400 });
     }
 
-    // Paginate through all users to find by email
-    let user = null;
-    let page = 1;
-    const perPage = 1000;
+    const { data, error } = await supabaseAdmin.rpc('get_user_provider', {
+      user_email: email,
+    });
 
-    while (!user) {
-      const { data, error } = await supabaseAdmin.auth.admin.listUsers({
-        page,
-        perPage,
-      });
+    console.log('check-provider: email=', email, 'provider=', data, 'error=', error);
 
-      if (error || !data?.users?.length) break;
-
-      user = data.users.find((u) => u.email === email) || null;
-
-      if (data.users.length < perPage) break; // Last page
-      page++;
-    }
-
-    console.log('check-provider: email=', email, 'user found=', !!user, 'identities=', user?.identities);
-
-    if (!user) {
+    if (error || !data) {
       return NextResponse.json({ provider: 'email' });
     }
 
-    const googleIdentity = user.identities?.find((i) => i.provider === 'google');
-    const provider = googleIdentity ? 'google' : 'email';
-
-    console.log('check-provider: resolved provider=', provider);
-
-    return NextResponse.json({ provider });
+    return NextResponse.json({ provider: data });
   } catch (err) {
     console.error('check-provider error:', err);
     return NextResponse.json({ provider: 'email' });
