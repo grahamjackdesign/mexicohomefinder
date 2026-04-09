@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Home, Mail, ArrowLeft, Globe, CheckCircle } from 'lucide-react';
+import { Home, Mail, ArrowLeft, Globe, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 const content = {
@@ -15,10 +15,13 @@ const content = {
     back: 'Back to Login',
     switchLang: 'Español',
     successTitle: 'Check Your Email',
-    successMessage: 'We\'ve sent a password reset link to your email. Please check your inbox and click the link to reset your password.',
+    successMessage: "We've sent a password reset link to your email. Please check your inbox and click the link to reset your password.",
     successNote: 'The link will expire in 1 hour.',
     backToLogin: 'Back to Login',
     errorGeneric: 'Something went wrong. Please try again.',
+    googleTitle: 'You signed up with Google',
+    googleMessage: "This email address is linked to a Google account. You don't need a password — just use the Google sign-in button on the login page.",
+    googleButton: 'Back to Login',
   },
   es: {
     title: 'Recuperar Contraseña',
@@ -33,15 +36,20 @@ const content = {
     successNote: 'El enlace expirará en 1 hora.',
     backToLogin: 'Volver al Login',
     errorGeneric: 'Algo salió mal. Por favor intenta de nuevo.',
+    googleTitle: 'Registrado con Google',
+    googleMessage: 'Este correo está vinculado a una cuenta de Google. No necesitas contraseña — usa el botón de Google en la página de inicio de sesión.',
+    googleButton: 'Volver al Login',
   },
 };
+
+type State = 'form' | 'sent' | 'google';
 
 export default function ForgotPasswordPage() {
   const [lang, setLang] = useState<'en' | 'es'>('en');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [sent, setSent] = useState(false);
+  const [state, setState] = useState<State>('form');
 
   const t = content[lang];
 
@@ -51,13 +59,38 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Check if this email belongs to a Google user
+      const { data: { methods }, error: methodsError } = await supabase.auth.getOAuthToken({} as any).catch(() => ({ data: { methods: null }, error: null }));
+
+      // Use signInWithOtp as a probe — instead, check via admin or use a workaround:
+      // We attempt a password reset and check the response, but first
+      // try to detect Google users by attempting sign-in with a dummy password
+      // and checking the error code. The cleanest approach is to just send the
+      // reset email and let Supabase handle it — but we also check using
+      // fetchSignInMethodsForEmail if available. Since Supabase JS v2 doesn't
+      // expose this directly on the client, we use our own API route to check.
+
+      const checkRes = await fetch('/api/auth/check-provider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const { provider } = await checkRes.json();
+
+      if (provider === 'google') {
+        setState('google');
+        return;
+      }
+
+      // Email/password user — send reset email
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/list-property/reset-password`,
       });
 
-      if (error) throw error;
+      if (resetError) throw resetError;
 
-      setSent(true);
+      setState('sent');
     } catch (err: any) {
       setError(err.message || t.errorGeneric);
     } finally {
@@ -99,8 +132,7 @@ export default function ForgotPasswordPage() {
 
         {/* Content */}
         <div className="p-6">
-          {sent ? (
-            /* Success State */
+          {state === 'sent' && (
             <div className="text-center py-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -115,15 +147,38 @@ export default function ForgotPasswordPage() {
                 {t.backToLogin}
               </Link>
             </div>
-          ) : (
-            /* Form */
+          )}
+
+          {state === 'google' && (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                {/* Google G */}
+                <svg className="w-8 h-8" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-primary mb-2">{t.googleTitle}</h2>
+              <p className="text-gray-600 mb-6">{t.googleMessage}</p>
+              <Link
+                href="/list-property/login"
+                className="inline-block px-6 py-2.5 bg-secondary hover:bg-secondary-dark text-white font-semibold rounded-xl transition-colors"
+              >
+                {t.googleButton}
+              </Link>
+            </div>
+          )}
+
+          {state === 'form' && (
             <>
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
                 </div>
               )}
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -140,7 +195,6 @@ export default function ForgotPasswordPage() {
                     />
                   </div>
                 </div>
-
                 <button
                   type="submit"
                   disabled={isLoading}
