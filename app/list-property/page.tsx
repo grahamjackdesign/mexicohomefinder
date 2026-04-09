@@ -196,7 +196,7 @@ export default function ListPropertyPage() {
 
   const handleSubmit = async () => {
     setError('');
-    if (!formData.title || !formData.price || !formData.contact_name || !formData.contact_phone) {
+    if (!formData.title || !formData.price || !formData.contact_name || !formData.contact_phone || !formData.contact_email) {
       setError(t.errors.required);
       return;
     }
@@ -542,9 +542,10 @@ export default function ListPropertyPage() {
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>{t.fields.email}</label>
+                    <label className={labelClass}>{t.fields.email} {t.required}</label>
                     <input
                       type="email"
+                      required
                       className={inputClass}
                       placeholder={t.fields.emailPlaceholder}
                       value={formData.contact_email}
