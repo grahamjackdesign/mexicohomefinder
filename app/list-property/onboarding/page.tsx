@@ -56,16 +56,37 @@ export default function OnboardingPage() {
 
     const { data: agentUser } = await supabase
       .from('agent_users')
-      .select('id')
+      .select('id, phone, company_name')
       .eq('user_id', session.user.id)
       .single();
 
-    if (!agentUser) {
-      router.push('/list-property/login');
-      return;
-    }
+    if (agentUser) {
+      // Record exists — if already complete send to dashboard
+      if (agentUser.phone && agentUser.company_name) {
+        router.push('/list-property/dashboard');
+        return;
+      }
+      setAgentUserId(agentUser.id);
+    } else {
+      // No record yet — create one from Google session data
+      const { data: newAgent, error } = await supabase
+        .from('agent_users')
+        .insert({
+          user_id: session.user.id,
+          email: session.user.email,
+          full_name: session.user.user_metadata?.full_name || '',
+          role: 'public',
+        })
+        .select('id')
+        .single();
 
-    setAgentUserId(agentUser.id);
+      if (error || !newAgent) {
+        router.push('/list-property/login');
+        return;
+      }
+
+      setAgentUserId(newAgent.id);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,13 +96,13 @@ export default function OnboardingPage() {
     setError('');
 
     const { error: updateError } = await supabase
-    .from('agent_users')
-    .update({
-      phone: formData.phone || null,
-      company_name: formData.company_name || null,
-      role: formData.company_name.trim() ? 'agent' : 'public',
-    })
-    .eq('id', agentUserId);
+      .from('agent_users')
+      .update({
+        phone: formData.phone || null,
+        company_name: formData.company_name || null,
+        role: formData.company_name.trim() ? 'agent' : 'public',
+      })
+      .eq('id', agentUserId);
 
     if (updateError) {
       setError('Something went wrong. Please try again.');
@@ -155,7 +176,7 @@ export default function OnboardingPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !agentUserId}
             className="w-full py-3 flex items-center justify-center gap-2 text-white font-semibold rounded-xl transition-all hover:brightness-110 disabled:opacity-50"
             style={{ backgroundColor: '#C1714F' }}
           >
