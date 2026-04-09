@@ -14,14 +14,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ provider: 'unknown' }, { status: 400 });
     }
 
-    // Direct lookup by email — avoids pagination issues with listUsers()
-    const { data: { user }, error } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+    // Paginate through all users to find by email
+    let user = null;
+    let page = 1;
+    const perPage = 1000;
+
+    while (!user) {
+      const { data, error } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage,
+      });
+
+      if (error || !data?.users?.length) break;
+
+      user = data.users.find((u) => u.email === email) || null;
+
+      if (data.users.length < perPage) break; // Last page
+      page++;
+    }
 
     console.log('check-provider: email=', email, 'user found=', !!user, 'identities=', user?.identities);
 
-    if (error || !user) {
-      // Don't reveal whether the email exists — treat as email user
-      // so the reset email flow runs (Supabase handles non-existent emails gracefully)
+    if (!user) {
       return NextResponse.json({ provider: 'email' });
     }
 
