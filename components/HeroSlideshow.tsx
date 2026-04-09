@@ -276,7 +276,7 @@ export default function HeroSlideshow() {
               style={{ backgroundColor: '#C85A3E' }}
             >
               <span className="w-2 h-2 bg-white rounded-full opacity-90 flex-shrink-0" />
-              List Your Property Free — Quicklist
+              List Your Property in Seconds! — Quicklist
             </a>
           </div>
         </div>
