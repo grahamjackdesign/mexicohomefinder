@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Lock, Globe, CheckCircle, Eye, EyeOff, AlertCircle, Home } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -23,7 +22,6 @@ const content = {
     errorGeneric: 'Something went wrong. Please try again.',
     errorExpired: 'This reset link has expired or is invalid. Please request a new one.',
     requestNew: 'Request New Link',
-    loading: 'Verifying your link...',
   },
   es: {
     title: 'Restablecer Contraseña',
@@ -41,21 +39,17 @@ const content = {
     errorGeneric: 'Algo salió mal. Por favor intenta de nuevo.',
     errorExpired: 'Este enlace ha expirado o no es válido. Por favor solicita uno nuevo.',
     requestNew: 'Solicitar Nuevo Enlace',
-    loading: 'Verificando tu enlace...',
   },
 };
 
-type SessionState = 'loading' | 'valid' | 'invalid';
-
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const [lang, setLang] = useState<'en' | 'es'>('en');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [sessionState, setSessionState] = useState<SessionState>('loading');
+  const [isExpired, setIsExpired] = useState(false);
 
   const [formData, setFormData] = useState({
     password: '',
@@ -63,29 +57,6 @@ export default function ResetPasswordPage() {
   });
 
   const t = content[lang];
-
-  useEffect(() => {
-    // Give Supabase time to process the token from the URL hash
-    // then listen for the PASSWORD_RECOVERY event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' && session) {
-        setSessionState('valid');
-      } else if (event === 'SIGNED_IN' && session) {
-        // Sometimes fires instead of PASSWORD_RECOVERY
-        setSessionState('valid');
-      }
-    });
-
-    // Fallback: if no event fires within 3 seconds, mark as invalid
-    const timeout = setTimeout(() => {
-      setSessionState((prev) => prev === 'loading' ? 'invalid' : prev);
-    }, 3000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -114,7 +85,17 @@ export default function ResetPasswordPage() {
         password: formData.password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (
+          error.message.includes('expired') ||
+          error.message.includes('invalid') ||
+          error.message.includes('Auth session missing')
+        ) {
+          setIsExpired(true);
+          return;
+        }
+        throw error;
+      }
 
       setSuccess(true);
     } catch (err: any) {
@@ -126,7 +107,7 @@ export default function ResetPasswordPage() {
 
   const Header = () => (
     <div className="px-6 py-5" style={{ backgroundColor: '#1B2B4B' }}>
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
             <Home className="w-5 h-5" style={{ color: '#C1714F' }} />
@@ -147,52 +128,29 @@ export default function ResetPasswordPage() {
     </div>
   );
 
-  // Loading
-  if (sessionState === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#C1714F' }}>
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-          <Header />
-          <div className="p-10 flex flex-col items-center gap-4">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
-            <p className="text-gray-500 text-sm">{t.loading}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Invalid / expired
-  if (sessionState === 'invalid') {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#C1714F' }}>
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-          <Header />
-          <div className="p-6 text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <AlertCircle className="w-8 h-8 text-red-600" />
-            </div>
-            <p className="text-gray-600 mb-6">{t.errorExpired}</p>
-            <Link
-              href="/list-property/forgot-password"
-              className="inline-block px-6 py-2.5 text-white font-semibold rounded-xl transition-colors"
-              style={{ backgroundColor: '#C1714F' }}
-            >
-              {t.requestNew}
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#C1714F' }}>
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
         <Header />
 
         <div className="p-6">
-          {success ? (
+          {isExpired && (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <p className="text-gray-600 mb-6">{t.errorExpired}</p>
+              <Link
+                href="/list-property/forgot-password"
+                className="inline-block px-6 py-2.5 text-white font-semibold rounded-xl transition-colors"
+                style={{ backgroundColor: '#C1714F' }}
+              >
+                {t.requestNew}
+              </Link>
+            </div>
+          )}
+
+          {success && (
             <div className="text-center py-4">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-green-600" />
@@ -207,7 +165,9 @@ export default function ResetPasswordPage() {
                 {t.signIn}
               </Link>
             </div>
-          ) : (
+          )}
+
+          {!success && !isExpired && (
             <>
               {error && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg flex items-center gap-2">
