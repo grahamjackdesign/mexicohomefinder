@@ -35,7 +35,7 @@ export default function TermsOfServicePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-display font-bold text-primary mb-4">2. Description of Service</h2>
               <p className="text-gray-700 mb-4">
-                MexicoHomeFinder is a real estate listing platform that connects property buyers with real estate agents and property sellers in Mexico. We provide a marketplace for property listings, search functionality, and communication tools between buyers and agents.
+                MexicoHomeFinder is a real estate listing platform that connects Homeseekers with real estate agents and property sellers in Mexico. We provide a marketplace for property listings, search functionality, and communication tools between homeseekers and agents.
               </p>
               <p className="text-gray-700 mb-4">
                 The Platform does not own, sell, rent, or manage any properties listed. We are a technology platform that facilitates connections between parties.
@@ -88,7 +88,7 @@ export default function TermsOfServicePage() {
             <section className="mb-8">
               <h2 className="text-2xl font-display font-bold text-primary mb-4">6. Fees and Payments</h2>
               <p className="text-gray-700 mb-4">
-                Access to the Platform for property search is currently free for buyers. Real estate agents may be subject to subscription fees or commission arrangements as outlined in separate agent agreements.
+                Access to the Platform for property search is currently free for ALL. However, we may charge fees for certain premium features or services in the future. Any fees will be clearly disclosed before you incur them, and payment will be required to access those features.
               </p>
               <p className="text-gray-700 mb-4">
                 All fees are non-refundable unless otherwise stated. We reserve the right to change our fee structure with reasonable notice.

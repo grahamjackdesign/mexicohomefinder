@@ -21,7 +21,7 @@ const content = {
   en: {
     badge: 'Free · Unlimited · No account needed to start',
     heading: 'List Your Property on Mexico Home Finder',
-    subheading: 'Reach thousands of US buyers actively looking for property in Mexico. It takes less than 5 minutes.',
+    subheading: 'Reach thousands of US homeseekers actively looking for property in Mexico. It takes less than 5 minutes.',
     sections: {
       property: 'Property Details',
       location: 'Location',

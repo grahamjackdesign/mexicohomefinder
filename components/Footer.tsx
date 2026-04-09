@@ -19,7 +19,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-sm leading-relaxed text-white/70">
-              Connecting American & Canadian buyers with trusted real estate
+              Connecting American & Canadian Homeseekers with trusted real estate
               professionals across Mexico's most desirable locations.
             </p>
           </div>

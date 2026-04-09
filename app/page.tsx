@@ -354,7 +354,7 @@ export default async function HomePage() {
               {
                 step: '01',
                 title: 'Search & Connect',
-                description: 'Browse curated listings and connect with verified agents who understand American buyers'
+                description: 'Browse curated listings and connect with verified agents who understand American clients'
               },
               {
                 step: '02',
@@ -417,7 +417,7 @@ export default async function HomePage() {
             Are You a Real Estate Agent?
           </h2>
           <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: '#2C4563', opacity: 0.7 }}>
-            Join MexicoHomeFinder and connect with serious American & Canadian buyers. 
+            Join MexicoHomeFinder and connect with serious American & Canadian Homeseekers. 
             Get your listings in front of qualified international clients with real budgets.
           </p>
           <Link

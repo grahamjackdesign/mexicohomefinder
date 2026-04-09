@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 const t = {
   en: {
     title: 'Create your account',
-    subtitle: 'List your property on Mexico Home Finder and reach thousands of American, Canadian and European buyers.',
+    subtitle: 'List your property on Mexico Home Finder and reach thousands of American, Canadian and European Homeseekers.',
     name: 'Full name',
     email: 'Email',
     phone: 'Phone',

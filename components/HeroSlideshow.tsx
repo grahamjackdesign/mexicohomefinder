@@ -206,7 +206,7 @@ export default function HeroSlideshow() {
             }}
           >
             <span className="text-sm font-semibold uppercase tracking-wide">
-              🇺🇸 Built for American & Canadian Buyers
+              🇺🇸 Built for American & Canadian Homeseekers
             </span>
           </div>
 
@@ -224,7 +224,7 @@ export default function HeroSlideshow() {
             className="text-lg sm:text-xl text-white/90 mb-10 max-w-2xl hero-fade-in drop-shadow-lg"
             style={{ animationDelay: '0.2s' }}
           >
-            The trusted platform connecting American buyers with verified
+            The trusted platform connecting American and Canadian Homeseekers with verified
             Mexican real estate agents. From beachfront condos to colonial
             homes, find your perfect property with expert guidance.
           </p>
