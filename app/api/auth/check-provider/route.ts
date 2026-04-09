@@ -18,10 +18,12 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers();
 
     if (error) {
+      console.error('check-provider: listUsers error=', error);
       return NextResponse.json({ provider: 'unknown' });
     }
 
     const user = data.users.find((u) => u.email === email);
+    console.log('check-provider: email=', email, 'user found=', !!user, 'identities=', user?.identities);
 
     if (!user) {
       // Don't reveal whether the email exists — just treat as email user
@@ -32,6 +34,8 @@ export async function POST(req: NextRequest) {
     // Check the identities array for the provider
     const googleIdentity = user.identities?.find((i) => i.provider === 'google');
     const provider = googleIdentity ? 'google' : 'email';
+
+    console.log('check-provider: resolved provider=', provider);
 
     return NextResponse.json({ provider });
   } catch (err) {
