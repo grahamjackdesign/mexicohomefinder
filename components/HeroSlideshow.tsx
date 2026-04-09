@@ -175,7 +175,7 @@ export default function HeroSlideshow() {
                   fill
                   style={{ objectFit: 'cover' }}
                   priority={index === 0}
-                  quality={90}
+                  quality={75}
                 />
               </div>
             </div>
