@@ -10,6 +10,7 @@ const supabaseAdmin = createClient(
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
   const code = searchParams.get('code')
+  const type = searchParams.get('type')
 
   if (!code) {
     return NextResponse.redirect(`${origin}/list-property/login?error=no_code`)
@@ -39,6 +40,11 @@ export async function GET(req: NextRequest) {
   if (error || !session) {
     console.error('Auth callback error:', error)
     return NextResponse.redirect(`${origin}/list-property/login?error=auth_failed`)
+  }
+
+  // Password recovery flow — send straight to reset password page
+  if (type === 'recovery') {
+    return NextResponse.redirect(`${origin}/list-property/reset-password`)
   }
 
   const user = session.user
