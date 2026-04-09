@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Lock, Globe, CheckCircle, Eye, EyeOff, AlertCircle, Home } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
 
 const content = {
   en: {
@@ -54,7 +55,14 @@ export default function ResetPasswordPage() {
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: '',
+
+    
   });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('reset-password: session=', !!session, session?.user?.email);
+    });
+  }, []);
 
   const t = content[lang];
 
