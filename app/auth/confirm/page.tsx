@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Home, Globe, ShieldCheck, AlertCircle } from 'lucide-react';
@@ -31,7 +31,7 @@ const content = {
 
 type PageState = 'ready' | 'confirming' | 'expired';
 
-export default function AuthConfirmPage() {
+function AuthConfirmInner() {
   const [lang, setLang] = useState<'en' | 'es'>('en');
   const [pageState, setPageState] = useState<PageState>('ready');
   const [tokenHash, setTokenHash] = useState<string | null>(null);
@@ -93,7 +93,6 @@ export default function AuthConfirmPage() {
 
         {/* Content */}
         <div className="p-6">
-
           {(pageState === 'ready' || pageState === 'confirming') && (
             <div className="text-center py-4">
               <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -131,9 +130,16 @@ export default function AuthConfirmPage() {
               </Link>
             </div>
           )}
-
         </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthConfirmPage() {
+  return (
+    <Suspense>
+      <AuthConfirmInner />
+    </Suspense>
   );
 }
