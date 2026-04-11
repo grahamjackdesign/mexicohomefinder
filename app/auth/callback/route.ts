@@ -10,16 +10,10 @@ const supabaseAdmin = createClient(
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
   const code = searchParams.get('code')
-  const type = searchParams.get('type')
+  const next = searchParams.get('next')
 
   if (!code) {
     return NextResponse.redirect(`${origin}/list-property/login?error=no_code`)
-  }
-
-  // For password recovery, pass the code to the reset page to exchange client-side
-  // This ensures the session is established in the browser, not the server
-  if (type === 'recovery') {
-    return NextResponse.redirect(`${origin}/list-property/reset-password?code=${code}`)
   }
 
   const { createServerClient } = await import('@supabase/ssr')
@@ -46,6 +40,11 @@ export async function GET(req: NextRequest) {
   if (error || !session) {
     console.error('Auth callback error:', error)
     return NextResponse.redirect(`${origin}/list-property/login?error=auth_failed`)
+  }
+
+  // If a next param was passed (e.g. password reset), redirect there now
+  if (next) {
+    return NextResponse.redirect(`${origin}${next}`)
   }
 
   const user = session.user
