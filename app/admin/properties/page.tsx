@@ -21,7 +21,24 @@ const REJECTION_REASONS = [
 ];
 
 type ApprovalStatus = 'pending' | 'approved' | 'resubmit' | 'rejected';
-type Panel = 'mhf' | 'quicklist' | 'unlisted';
+type Panel = 'mhf' | 'quicklist' | 'unlisted' | 'agents';
+
+type Agent = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  client_id: string;
+  created_at: string;
+  source?: string;
+  business_name?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  mhf_tier?: string;
+  subscription_status?: string;
+  property_count: number;
+};
 
 type Property = {
   id: string;
@@ -77,6 +94,10 @@ export default function AdminPropertiesPage() {
   // Live count from DB
   const [liveCount, setLiveCount] = useState(0);
 
+  // Agents
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+
   // Shared
   const [expanded, setExpanded] = useState<string | null>(null);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -91,7 +112,7 @@ export default function AdminPropertiesPage() {
       router.push('/');
       return;
     }
-    await Promise.all([loadProperties(), loadQuicklist(), loadUnlisted(0), loadLiveCount()]);
+    await Promise.all([loadProperties(), loadQuicklist(), loadUnlisted(0), loadLiveCount(), loadAgents()]);
     setLoading(false);
   };
 
@@ -121,6 +142,66 @@ export default function AdminPropertiesPage() {
       .select('*', { count: 'exact', head: true })
       .eq('show_on_mhf', true);
     if (count !== null) setLiveCount(count);
+  };
+
+  const loadAgents = async () => {
+    setAgentsLoading(true);
+
+    // Fetch all agent_users with their linked client company
+    const { data: agentData, error } = await supabase
+      .from('agent_users')
+      .select(`
+        id,
+        name,
+        email,
+        phone,
+        client_id,
+        created_at,
+        source,
+        clients (
+          business_name,
+          address,
+          city,
+          state,
+          mhf_tier,
+          subscription_status
+        )
+      `)
+      .order('created_at', { ascending: false })
+      .limit(1000);
+
+    if (error || !agentData) { setAgentsLoading(false); return; }
+
+    // Fetch property counts per agent
+    const { data: propCounts } = await supabase
+      .from('properties')
+      .select('agent_user_id')
+      .not('agent_user_id', 'is', null);
+
+    const countMap: Record<string, number> = {};
+    propCounts?.forEach(p => {
+      if (p.agent_user_id) countMap[p.agent_user_id] = (countMap[p.agent_user_id] || 0) + 1;
+    });
+
+    const merged: Agent[] = agentData.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      email: a.email,
+      phone: a.phone,
+      client_id: a.client_id,
+      created_at: a.created_at,
+      source: a.source,
+      business_name: a.clients?.business_name,
+      address: a.clients?.address,
+      city: a.clients?.city,
+      state: a.clients?.state,
+      mhf_tier: a.clients?.mhf_tier,
+      subscription_status: a.clients?.subscription_status,
+      property_count: countMap[a.id] || 0,
+    }));
+
+    setAgents(merged);
+    setAgentsLoading(false);
   };
 
   const loadUnlisted = async (page: number) => {
@@ -482,6 +563,7 @@ export default function AdminPropertiesPage() {
             { key: 'mhf' as Panel, label: 'MHF Submissions', badge: mhfCount('pending') },
             { key: 'quicklist' as Panel, label: 'Quicklist', badge: qlCount('pending') },
             { key: 'unlisted' as Panel, label: 'Unlisted on MHF', badge: unlistedTotal },
+            { key: 'agents' as Panel, label: 'Agents', badge: agents.length },
           ]).map(({ key, label, badge }) => (
             <button
               key={key}
@@ -493,7 +575,7 @@ export default function AdminPropertiesPage() {
               {label}
               {badge > 0 && (
                 <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-                  panel === key ? 'bg-blue-500 text-white' : 'bg-yellow-100 text-yellow-700'
+                  panel === key ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
                 }`}>
                   {badge}
                 </span>
@@ -567,7 +649,6 @@ export default function AdminPropertiesPage() {
                 properties not listed on MHF
               </p>
             </div>
-
             {unlisted.length === 0 && !unlistedLoading ? (
               <div className="text-center text-gray-400 py-16">No unlisted properties.</div>
             ) : (
@@ -587,6 +668,106 @@ export default function AdminPropertiesPage() {
                   </div>
                 )}
               </>
+            )}
+          </>
+        )}
+
+        {/* ── Agents Panel ── */}
+        {panel === 'agents' && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-gray-800">{agents.length}</span> registered agents
+              </p>
+            </div>
+            {agentsLoading ? (
+              <div className="flex justify-center py-16">
+                <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="text-center text-gray-400 py-16">No agents found.</div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {agents.map(agent => (
+                  <div key={agent.id} className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col gap-3">
+
+                    {/* Name + company */}
+                    <div>
+                      <p className="font-semibold text-gray-900">{agent.name || '—'}</p>
+                      {agent.business_name && (
+                        <p className="text-xs text-gray-500 mt-0.5">{agent.business_name}</p>
+                      )}
+                    </div>
+
+                    {/* Contact details */}
+                    <div className="space-y-1">
+                      {agent.email && (
+                        <p className="text-sm text-gray-600 truncate">{agent.email}</p>
+                      )}
+                      {agent.phone && (
+                        <p className="text-sm text-gray-600">{agent.phone}</p>
+                      )}
+                    </div>
+
+                    {/* Address */}
+                    {(agent.address || agent.city || agent.state) && (
+                      <div className="flex items-start gap-1.5 text-xs text-gray-400">
+                        <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                        <span>{[agent.address, agent.city, agent.state].filter(Boolean).join(', ')}</span>
+                      </div>
+                    )}
+
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="flex items-center gap-1.5 text-xs px-2.5 py-1 bg-gray-100 rounded-full text-gray-600">
+                        <Home className="w-3 h-3" />
+                        {agent.property_count} {agent.property_count === 1 ? 'property' : 'properties'}
+                      </span>
+                      {agent.mhf_tier && (
+                        <span className="text-xs px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full font-medium">
+                          {agent.mhf_tier}
+                        </span>
+                      )}
+                      {agent.subscription_status && (
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                          agent.subscription_status === 'active'
+                            ? 'bg-green-50 text-green-600'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {agent.subscription_status}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
+                      {agent.email && (
+                        <a
+                          href={`mailto:${agent.email}`}
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition"
+                        >
+                          Email
+                        </a>
+                      )}
+                      {agent.phone && (
+                        <a
+                          href={`https://wa.me/${agent.phone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded-lg transition"
+                          title="WhatsApp"
+                        >
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.117 1.528 5.845L.057 23.617a.75.75 0 00.921.921l5.772-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.93 0-3.736-.502-5.3-1.38l-.38-.22-3.93 1.002 1.021-3.835-.242-.395A9.956 9.956 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+                          </svg>
+                        </a>
+                      )}
+                    </div>
+
+                  </div>
+                ))}
+              </div>
             )}
           </>
         )}
