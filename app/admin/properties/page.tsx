@@ -403,8 +403,12 @@ export default function AdminPropertiesPage() {
           {property.sqft != null && <span>{property.sqft} m²</span>}
         </div>
 
-        {property.contact_name && (
-          <p className="text-xs text-gray-400 truncate">{property.contact_name}</p>
+        {(property.contact_name || property.contact_phone || property.contact_email) && (
+          <div className="border-t border-gray-100 pt-2 mt-1 space-y-0.5">
+            {property.contact_name && <p className="text-xs text-gray-600 font-medium truncate">{property.contact_name}</p>}
+            {property.contact_phone && <p className="text-xs text-gray-400 truncate">{property.contact_phone}</p>}
+            {property.contact_email && <p className="text-xs text-gray-400 truncate">{property.contact_email}</p>}
+          </div>
         )}
 
         <div className="mt-auto pt-3 flex gap-2">
