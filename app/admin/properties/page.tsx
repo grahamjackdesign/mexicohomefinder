@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import {
   CheckCircle, XCircle, Clock, AlertCircle,
-  ChevronDown, ChevronUp, LogOut, Home, MapPin, User, Phone, Mail,
+  ChevronDown, ChevronUp, LogOut, Home, MapPin, Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -21,6 +21,7 @@ const REJECTION_REASONS = [
 ];
 
 type ApprovalStatus = 'pending' | 'approved' | 'resubmit' | 'rejected';
+type Panel = 'mhf' | 'quicklist' | 'unlisted';
 
 type Property = {
   id: string;
@@ -47,22 +48,34 @@ type Property = {
   contact_phone: string;
   created_at: string;
   submitted_at: string;
+  site?: string;
 };
+
+const UNLISTED_PAGE_SIZE = 50;
 
 export default function AdminPropertiesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [panel, setPanel] = useState<'mhf' | 'quicklist'>('mhf');
+  const [panel, setPanel] = useState<Panel>('mhf');
 
-  // MHF submissions state
+  // MHF submissions
   const [properties, setProperties] = useState<Property[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'resubmit' | 'rejected'>('pending');
   const [decisions, setDecisions] = useState<Record<string, { action: 'resubmit' | 'rejected'; reason: string }>>({});
 
-  // Quicklist state
+  // Quicklist
   const [quicklist, setQuicklist] = useState<Property[]>([]);
   const [qlFilter, setQlFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
   const [qlDecisions, setQlDecisions] = useState<Record<string, { action: 'resubmit' | 'rejected'; reason: string }>>({});
+
+  // Unlisted
+  const [unlisted, setUnlisted] = useState<Property[]>([]);
+  const [unlistedTotal, setUnlistedTotal] = useState(0);
+  const [unlistedPage, setUnlistedPage] = useState(0);
+  const [unlistedLoading, setUnlistedLoading] = useState(false);
+
+  // Live count from DB
+  const [liveCount, setLiveCount] = useState(0);
 
   // Shared
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -78,7 +91,8 @@ export default function AdminPropertiesPage() {
       router.push('/');
       return;
     }
-    await Promise.all([loadProperties(), loadQuicklist()]);
+    await Promise.all([loadProperties(), loadQuicklist(), loadUnlisted(0), loadLiveCount()]);
+    setLoading(false);
   };
 
   const loadProperties = async () => {
@@ -86,9 +100,9 @@ export default function AdminPropertiesPage() {
       .from('properties')
       .select('*')
       .eq('site', 'mexico-home-finder')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000);
     if (!error && data) setProperties(data);
-    setLoading(false);
   };
 
   const loadQuicklist = async () => {
@@ -96,13 +110,40 @@ export default function AdminPropertiesPage() {
       .from('properties')
       .select('*')
       .eq('is_public_listing', true)
-      .order('submitted_at', { ascending: false });
+      .order('submitted_at', { ascending: false })
+      .limit(500);
     if (!error && data) setQuicklist(data);
+  };
+
+  const loadLiveCount = async () => {
+    const { count } = await supabase
+      .from('properties')
+      .select('*', { count: 'exact', head: true })
+      .eq('show_on_mhf', true);
+    if (count !== null) setLiveCount(count);
+  };
+
+  const loadUnlisted = async (page: number) => {
+    setUnlistedLoading(true);
+    const from = page * UNLISTED_PAGE_SIZE;
+    const to = from + UNLISTED_PAGE_SIZE - 1;
+    const { data, error, count } = await supabase
+      .from('properties')
+      .select('*', { count: 'exact' })
+      .eq('show_on_mhf', false)
+      .order('created_at', { ascending: false })
+      .range(from, to);
+    if (!error && data) {
+      setUnlisted(prev => page === 0 ? data : [...prev, ...data]);
+      if (count !== null) setUnlistedTotal(count);
+      setUnlistedPage(page);
+    }
+    setUnlistedLoading(false);
   };
 
   // ── Actions ──────────────────────────────────────────────
 
-  const handleApprove = async (id: string, isQuicklist = false) => {
+  const handleApprove = async (id: string, source: Panel) => {
     setProcessing(id);
     const res = await fetch('/api/admin/update-property', {
       method: 'POST',
@@ -116,16 +157,22 @@ export default function AdminPropertiesPage() {
       }),
     });
     if (res.ok) {
-      const update = (p: Property) =>
-        p.id === id ? { ...p, approval_status: 'approved' as ApprovalStatus, show_on_mhf: true, rejection_reason: undefined } : p;
-      if (isQuicklist) setQuicklist(prev => prev.map(update));
-      else setProperties(prev => prev.map(update));
+      if (source === 'unlisted') {
+        setUnlisted(prev => prev.filter(p => p.id !== id));
+        setUnlistedTotal(prev => prev - 1);
+        setLiveCount(prev => prev + 1);
+      } else {
+        const update = (p: Property) =>
+          p.id === id ? { ...p, approval_status: 'approved' as ApprovalStatus, show_on_mhf: true, rejection_reason: undefined } : p;
+        if (source === 'quicklist') setQuicklist(prev => prev.map(update));
+        else setProperties(prev => prev.map(update));
+      }
     }
     setProcessing(null);
   };
 
-  const handleDecision = async (id: string, isQuicklist = false) => {
-    const dec = isQuicklist ? qlDecisions[id] : decisions[id];
+  const handleDecision = async (id: string, source: 'mhf' | 'quicklist') => {
+    const dec = source === 'quicklist' ? qlDecisions[id] : decisions[id];
     if (!dec?.action || !dec?.reason) {
       alert('Please select an action and a reason.');
       return;
@@ -144,7 +191,7 @@ export default function AdminPropertiesPage() {
     if (res.ok) {
       const update = (p: Property) =>
         p.id === id ? { ...p, approval_status: dec.action as ApprovalStatus, show_on_mhf: false, rejection_reason: dec.reason } : p;
-      if (isQuicklist) {
+      if (source === 'quicklist') {
         setQuicklist(prev => prev.map(update));
         setQlDecisions(prev => { const n = { ...prev }; delete n[id]; return n; });
       } else {
@@ -164,10 +211,10 @@ export default function AdminPropertiesPage() {
 
   const getStatusBadge = (status: ApprovalStatus) => {
     switch (status) {
-      case 'pending':   return <span className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm"><AlertCircle className="w-4 h-4" />Pending</span>;
-      case 'approved':  return <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"><CheckCircle className="w-4 h-4" />Approved</span>;
-      case 'resubmit':  return <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"><Clock className="w-4 h-4" />Resubmit</span>;
-      case 'rejected':  return <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm"><XCircle className="w-4 h-4" />Rejected</span>;
+      case 'pending':  return <span className="flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm"><AlertCircle className="w-4 h-4" />Pending</span>;
+      case 'approved': return <span className="flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm"><CheckCircle className="w-4 h-4" />Approved</span>;
+      case 'resubmit': return <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm"><Clock className="w-4 h-4" />Resubmit</span>;
+      case 'rejected': return <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm"><XCircle className="w-4 h-4" />Rejected</span>;
     }
   };
 
@@ -179,21 +226,14 @@ export default function AdminPropertiesPage() {
   const mhfCount = (f: string) => f === 'all' ? properties.length : properties.filter(p => p.approval_status === f).length;
   const qlCount  = (f: string) => f === 'all' ? quicklist.length  : quicklist.filter(p => p.approval_status === f).length;
 
-  // ── Decision UI (shared between both panels) ──────────────
+  // ── Decision block ────────────────────────────────────────
 
-  const DecisionBlock = ({
-    property,
-    isQuicklist,
-  }: {
-    property: Property;
-    isQuicklist: boolean;
-  }) => {
-    const dec = isQuicklist ? qlDecisions[property.id] : decisions[property.id];
+  const DecisionBlock = ({ property, source }: { property: Property; source: 'mhf' | 'quicklist' }) => {
+    const dec = source === 'quicklist' ? qlDecisions[property.id] : decisions[property.id];
     const setDec = (val: { action: 'resubmit' | 'rejected'; reason: string }) => {
-      if (isQuicklist) setQlDecisions(prev => ({ ...prev, [property.id]: val }));
+      if (source === 'quicklist') setQlDecisions(prev => ({ ...prev, [property.id]: val }));
       else setDecisions(prev => ({ ...prev, [property.id]: val }));
     };
-
     return (
       <div className="flex items-start gap-3">
         <div className="flex-1 space-y-2">
@@ -220,7 +260,7 @@ export default function AdminPropertiesPage() {
           )}
         </div>
         <button
-          onClick={() => handleDecision(property.id, isQuicklist)}
+          onClick={() => handleDecision(property.id, source)}
           disabled={processing === property.id || !dec?.reason}
           className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition disabled:opacity-30 self-start mt-0.5"
         >
@@ -230,10 +270,10 @@ export default function AdminPropertiesPage() {
     );
   };
 
-  // ── Property card (shared) ────────────────────────────────
+  // ── Expandable card (MHF + Quicklist panels) ──────────────
 
-  const PropertyCard = ({ property, isQuicklist }: { property: Property; isQuicklist: boolean }) => (
-    <div key={property.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+  const PropertyCard = ({ property, source }: { property: Property; source: 'mhf' | 'quicklist' }) => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
       <div
         className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-50 transition"
         onClick={() => setExpanded(expanded === property.id ? null : property.id)}
@@ -249,13 +289,12 @@ export default function AdminPropertiesPage() {
           <div>
             <p className="font-semibold text-gray-900">{property.title}</p>
             <p className="text-sm text-gray-400">
-              {property.neighborhood && `${property.neighborhood}, `}{property.state} · {property.contact_name} · {property.contact_email}
+              {[property.neighborhood, property.state].filter(Boolean).join(', ')} · {property.contact_name} · {property.contact_email}
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
-              {isQuicklist
+              {source === 'quicklist'
                 ? `Submitted ${property.submitted_at ? new Date(property.submitted_at).toLocaleDateString() : '—'}`
-                : `Submitted ${new Date(property.created_at).toLocaleDateString()}`
-              }
+                : `Added ${new Date(property.created_at).toLocaleDateString()}`}
             </p>
           </div>
         </div>
@@ -267,7 +306,6 @@ export default function AdminPropertiesPage() {
 
       {expanded === property.id && (
         <div className="border-t border-gray-100 p-5 space-y-5">
-
           {property.images?.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-1">
               {property.images.map((img, i) => (
@@ -275,59 +313,33 @@ export default function AdminPropertiesPage() {
               ))}
             </div>
           )}
-
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-gray-400 text-xs mb-0.5">Price</p>
-              <p className="font-medium">{formatPrice(property.price, property.currency)}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-xs mb-0.5">Type</p>
-              <p className="font-medium">{property.listing_type} · {property.property_category}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-xs mb-0.5">Beds / Baths</p>
-              <p className="font-medium">{property.bedrooms} bd / {property.bathrooms} ba</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-xs mb-0.5">Size</p>
-              <p className="font-medium">{property.sqft} m²</p>
-            </div>
+            <div><p className="text-gray-400 text-xs mb-0.5">Price</p><p className="font-medium">{formatPrice(property.price, property.currency)}</p></div>
+            <div><p className="text-gray-400 text-xs mb-0.5">Type</p><p className="font-medium">{property.listing_type} · {property.property_category}</p></div>
+            <div><p className="text-gray-400 text-xs mb-0.5">Beds / Baths</p><p className="font-medium">{property.bedrooms} bd / {property.bathrooms} ba</p></div>
+            <div><p className="text-gray-400 text-xs mb-0.5">Size</p><p className="font-medium">{property.sqft} m²</p></div>
           </div>
-
-          {isQuicklist && (
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              {property.municipality && (
-                <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-gray-400" />{[property.neighborhood, property.municipality, property.state].filter(Boolean).join(', ')}</span>
-              )}
-            </div>
-          )}
-
           {property.description && (
             <div>
               <p className="text-gray-400 text-xs mb-1">Description</p>
               <p className="text-sm text-gray-700 whitespace-pre-line">{property.description}</p>
             </div>
           )}
-
           <div className="bg-gray-50 rounded-xl p-4 text-sm">
             <p className="text-gray-400 text-xs mb-2">Contact</p>
             <p className="font-medium">{property.contact_name}</p>
             <p className="text-gray-600">{property.contact_email} · {property.contact_phone}</p>
           </div>
-
           {property.rejection_reason && (
             <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-sm">
               <p className="text-xs text-orange-400 mb-1">Reason given</p>
               <p className="text-orange-700">{property.rejection_reason}</p>
             </div>
           )}
-
-          {/* Actions */}
           <div className="border-t border-gray-100 pt-4 space-y-3">
             {property.approval_status !== 'approved' && (
               <button
-                onClick={() => handleApprove(property.id, isQuicklist)}
+                onClick={() => handleApprove(property.id, source)}
                 disabled={processing === property.id}
                 className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition disabled:opacity-50"
               >
@@ -338,10 +350,84 @@ export default function AdminPropertiesPage() {
             {property.approval_status === 'approved' && (
               <p className="text-xs text-gray-400">This property is live. You can still take action:</p>
             )}
-            <DecisionBlock property={property} isQuicklist={isQuicklist} />
+            <DecisionBlock property={property} source={source} />
           </div>
         </div>
       )}
+    </div>
+  );
+
+  // ── Unlisted grid card ────────────────────────────────────
+
+  const UnlistedCard = ({ property }: { property: Property }) => (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col">
+      <div className="relative w-full h-40 bg-gray-100 flex-shrink-0">
+        {property.images?.[0] ? (
+          <img src={property.images[0]} alt={property.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Home className="w-8 h-8 text-gray-300" />
+          </div>
+        )}
+        {property.images?.length > 1 && (
+          <span className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+            +{property.images.length - 1}
+          </span>
+        )}
+        {property.site && (
+          <span className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-0.5 rounded capitalize">
+            {property.site.replace('mexico-home-finder', 'MHF')}
+          </span>
+        )}
+      </div>
+
+      <div className="p-4 flex flex-col gap-2 flex-1">
+        <p className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2">{property.title}</p>
+
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <MapPin className="w-3 h-3 flex-shrink-0" />
+          <span className="truncate">
+            {[property.neighborhood, property.municipality, property.state].filter(Boolean).join(', ') || '—'}
+          </span>
+        </div>
+
+        <div className="text-sm font-bold text-gray-800">
+          {property.price ? formatPrice(property.price, property.currency) : '—'}
+        </div>
+
+        <div className="flex flex-wrap gap-1.5 text-xs text-gray-500">
+          {property.listing_type && <span className="px-2 py-0.5 bg-gray-100 rounded capitalize">{property.listing_type}</span>}
+          {property.property_category && <span className="px-2 py-0.5 bg-gray-100 rounded capitalize">{property.property_category}</span>}
+          {property.bedrooms != null && <span>{property.bedrooms} bd</span>}
+          {property.bathrooms != null && <span>{property.bathrooms} ba</span>}
+          {property.sqft != null && <span>{property.sqft} m²</span>}
+        </div>
+
+        {property.contact_name && (
+          <p className="text-xs text-gray-400 truncate">{property.contact_name}</p>
+        )}
+
+        <div className="mt-auto pt-3 flex gap-2">
+          <button
+            onClick={() => handleApprove(property.id, 'unlisted')}
+            disabled={processing === property.id}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition disabled:opacity-50"
+          >
+            {processing === property.id
+              ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              : <><CheckCircle className="w-3.5 h-3.5" />&nbsp;Publish to MHF</>
+            }
+          </button>
+          <a
+            href={`/properties/${property.id}`}
+            target="_blank"
+            className="flex items-center justify-center px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition"
+            title="Preview"
+          >
+            <Eye className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </div>
     </div>
   );
 
@@ -368,13 +454,18 @@ export default function AdminPropertiesPage() {
                 Admin — Properties
               </span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign out
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500">
+                <span className="font-semibold text-green-600">{liveCount}</span> live on MHF
+              </span>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -382,33 +473,29 @@ export default function AdminPropertiesPage() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Panel switcher */}
-        <div className="flex gap-1 mb-8 bg-white border border-gray-200 rounded-xl p-1 w-fit">
-          <button
-            onClick={() => { setPanel('mhf'); setExpanded(null); }}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-              panel === 'mhf' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            MHF Submissions
-            {mhfCount('pending') > 0 && (
-              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${panel === 'mhf' ? 'bg-blue-500 text-white' : 'bg-yellow-100 text-yellow-700'}`}>
-                {mhfCount('pending')}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => { setPanel('quicklist'); setExpanded(null); }}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
-              panel === 'quicklist' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Quicklist
-            {qlCount('pending') > 0 && (
-              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${panel === 'quicklist' ? 'bg-blue-500 text-white' : 'bg-yellow-100 text-yellow-700'}`}>
-                {qlCount('pending')}
-              </span>
-            )}
-          </button>
+        <div className="flex gap-1 mb-8 bg-white border border-gray-200 rounded-xl p-1 w-fit flex-wrap">
+          {([
+            { key: 'mhf' as Panel, label: 'MHF Submissions', badge: mhfCount('pending') },
+            { key: 'quicklist' as Panel, label: 'Quicklist', badge: qlCount('pending') },
+            { key: 'unlisted' as Panel, label: 'Unlisted on MHF', badge: unlistedTotal },
+          ]).map(({ key, label, badge }) => (
+            <button
+              key={key}
+              onClick={() => { setPanel(key); setExpanded(null); }}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition ${
+                panel === key ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {label}
+              {badge > 0 && (
+                <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
+                  panel === key ? 'bg-blue-500 text-white' : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {badge}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* ── MHF Panel ── */}
@@ -428,12 +515,11 @@ export default function AdminPropertiesPage() {
                 </button>
               ))}
             </div>
-
             {mhfFiltered.length === 0 ? (
               <div className="text-center text-gray-400 py-16">No properties in this category.</div>
             ) : (
               <div className="space-y-4">
-                {mhfFiltered.map(p => <PropertyCard key={p.id} property={p} isQuicklist={false} />)}
+                {mhfFiltered.map(p => <PropertyCard key={p.id} property={p} source="mhf" />)}
               </div>
             )}
           </>
@@ -456,13 +542,47 @@ export default function AdminPropertiesPage() {
                 </button>
               ))}
             </div>
-
             {qlFiltered.length === 0 ? (
               <div className="text-center text-gray-400 py-16">No Quicklist submissions in this category.</div>
             ) : (
               <div className="space-y-4">
-                {qlFiltered.map(p => <PropertyCard key={p.id} property={p} isQuicklist={true} />)}
+                {qlFiltered.map(p => <PropertyCard key={p.id} property={p} source="quicklist" />)}
               </div>
+            )}
+          </>
+        )}
+
+        {/* ── Unlisted Panel ── */}
+        {panel === 'unlisted' && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <p className="text-sm text-gray-500">
+                Showing{' '}
+                <span className="font-semibold text-gray-800">{unlisted.length}</span> of{' '}
+                <span className="font-semibold text-gray-800">{unlistedTotal}</span>{' '}
+                properties not listed on MHF
+              </p>
+            </div>
+
+            {unlisted.length === 0 && !unlistedLoading ? (
+              <div className="text-center text-gray-400 py-16">No unlisted properties.</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                  {unlisted.map(p => <UnlistedCard key={p.id} property={p} />)}
+                </div>
+                {unlisted.length < unlistedTotal && (
+                  <div className="text-center">
+                    <button
+                      onClick={() => loadUnlisted(unlistedPage + 1)}
+                      disabled={unlistedLoading}
+                      className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition disabled:opacity-50"
+                    >
+                      {unlistedLoading ? 'Loading...' : `Load more (${unlistedTotal - unlisted.length} remaining)`}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
