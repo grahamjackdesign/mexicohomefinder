@@ -43,11 +43,18 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
               <Link
+                href="https://www.mexicohomefinder.com/rentals"
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-white"
+                style={{ backgroundColor: '#2d4a34' }}
+              >
+                Browse Rentals
+              </Link>
+              <Link
                 href="/properties"
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
               >
-                Browse Properties
+                Browse Sales
               </Link>
               <Link
                 href="/#buying-guide"
@@ -105,12 +112,20 @@ export default function Header() {
           >
             <div className="px-4 py-4 space-y-2">
               <Link
+                href="https://www.mexicohomefinder.com/rentals"
+                className="block px-4 py-3 rounded-lg font-semibold text-white"
+                style={{ backgroundColor: '#2d4a34' }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Browse Rentals
+              </Link>
+              <Link
                 href="/properties"
                 className="block px-4 py-3 rounded-lg font-medium transition-colors hover:bg-[#E8EEF4]"
                 style={{ color: '#2C4563' }}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Browse Properties
+                Browse Sales
               </Link>
               <Link
                 href="/properties?state=Guanajuato&municipality=San Miguel de Allende"
