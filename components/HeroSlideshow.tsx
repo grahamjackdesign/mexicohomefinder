@@ -265,9 +265,9 @@ export default function HeroSlideshow() {
             </div>
           </div>
 
-          {/* Quicklist CTA */}
+          {/* CTAs */}
           <div
-            className="mt-6 hero-fade-in"
+            className="mt-6 hero-fade-in flex flex-wrap gap-3"
             style={{ animationDelay: '0.5s' }}
           >
             <a
@@ -277,6 +277,14 @@ export default function HeroSlideshow() {
             >
               <span className="w-2 h-2 bg-white rounded-full opacity-90 flex-shrink-0" />
               List Your Property in Seconds! — Quicklist
+            </a>
+            <a
+              href="/rentals"
+              className="inline-flex items-center gap-3 px-6 py-3 rounded-full font-semibold text-white text-sm transition-all hover:brightness-110 hover:scale-105"
+              style={{ backgroundColor: '#1C4A2E' }}
+            >
+              <span className="w-2 h-2 bg-white rounded-full opacity-90 flex-shrink-0" />
+              Browse our new Rentals Section
             </a>
           </div>
         </div>
