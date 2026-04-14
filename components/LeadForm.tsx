@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Property } from '@/lib/supabase';
-import { Send, Mail, CheckCircle, Loader2 } from 'lucide-react';
+import { Send, CheckCircle, Loader2 } from 'lucide-react';
 
 type Props = {
   property: Property;
@@ -224,19 +224,6 @@ export default function LeadForm({ property }: Props) {
         </p>
       </form>
 
-      {/* Quick Contact */}
-      <div className="border-t border-gray-200 p-6">
-        <p className="text-sm text-gray-500 mb-4 text-center">
-          Or contact us directly:
-        </p>
-        <a
-          href="mailto:info@mexicohomefinder.com"
-          className="flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 font-medium"
-        >
-          <Mail className="w-4 h-4" />
-          Email
-        </a>
-      </div>
     </div>
   );
 }
