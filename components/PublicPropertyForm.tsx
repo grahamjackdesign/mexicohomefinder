@@ -152,6 +152,9 @@ export default function PublicPropertyForm({ userId, userEmail, userName, userPh
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  const MOBILE_IMAGE_LIMIT = 6;
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
@@ -289,18 +292,25 @@ export default function PublicPropertyForm({ userId, userEmail, userName, userPh
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    setError(null);
+
+    // On mobile, enforce 6 image limit
+    const remainingSlots = isMobile ? Math.max(0, MOBILE_IMAGE_LIMIT - images.length) : files.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+    if (filesToProcess.length === 0) return;
+
     setUploadingImage(true);
-    setUploadProgress({ current: 0, total: files.length });
-    setError(null); // Clear error when uploading
+    setUploadProgress({ current: 0, total: filesToProcess.length });
 
     const newImages: string[] = [];
 
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i < filesToProcess.length; i++) {
       try {
-        setUploadProgress({ current: i + 1, total: files.length });
+        setUploadProgress({ current: i + 1, total: filesToProcess.length });
 
         // Compress image
-        const compressedFile = await imageCompression(files[i], {
+        const compressedFile = await imageCompression(filesToProcess[i], {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
@@ -915,27 +925,34 @@ export default function PublicPropertyForm({ userId, userEmail, userName, userPh
         </DndContext>
 
         {/* Upload button — always visible below images */}
-        <label className="flex items-center justify-center gap-3 w-full py-4 mb-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-            className="hidden"
-            disabled={uploadingImage}
-          />
-          {uploadingImage ? (
-            <>
-              <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-gray-500">{uploadProgress.current} / {uploadProgress.total}</span>
-            </>
-          ) : (
-            <>
-              <Upload className="w-5 h-5 text-gray-400" />
-              <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}</span>
-            </>
-          )}
-        </label>
+        {isMobile && images.length >= MOBILE_IMAGE_LIMIT ? (
+          <div className="w-full py-4 mb-4 border-2 border-dashed border-gray-200 rounded-xl text-center bg-gray-50">
+            <p className="text-sm font-medium text-gray-600">Maximum 6 photos on mobile</p>
+            <p className="text-xs text-gray-400 mt-1">To upload more photos, please use a desktop or laptop</p>
+          </div>
+        ) : (
+          <label className={`flex items-center justify-center gap-3 w-full py-4 mb-4 border-2 border-dashed rounded-xl transition-colors ${uploadingImage ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 cursor-pointer hover:border-secondary hover:bg-secondary/5'}`}>
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={uploadingImage}
+            />
+            {uploadingImage ? (
+              <>
+                <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-gray-500">{uploadProgress.current} / {uploadProgress.total}</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 text-gray-400" />
+                <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}{isMobile && ` (${images.length}/${MOBILE_IMAGE_LIMIT})`}</span>
+              </>
+            )}
+          </label>
+        )}
 
         <p className="text-sm text-gray-500">
           {t('propertyForm.uploadHint')}
