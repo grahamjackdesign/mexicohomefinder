@@ -896,43 +896,46 @@ export default function PublicPropertyForm({ userId, userEmail, userName, userPh
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={images} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 max-h-[420px] overflow-y-auto pr-1">
-              {images.map((img, idx) => (
-                <SortablePhoto
-                  key={img}
-                  id={img}
-                  url={img}
-                  index={idx}
-                  onRemove={removeImage}
-                />
-              ))}
-
-              <label className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={uploadingImage}
-                />
-                {uploadingImage ? (
-                  <>
-                    <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-2" />
-                    <span className="text-sm text-gray-500">
-                      {uploadProgress.current} / {uploadProgress.total}
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}</span>
-                  </>
-                )}
-              </label>
-            </div>
+            {images.length > 0 && (
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="mb-4 pr-1">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {images.map((img, idx) => (
+                    <SortablePhoto
+                      key={img}
+                      id={img}
+                      url={img}
+                      index={idx}
+                      onRemove={removeImage}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </SortableContext>
         </DndContext>
+
+        {/* Upload button — always visible below images */}
+        <label className="flex items-center justify-center gap-3 w-full py-4 mb-4 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageUpload}
+            className="hidden"
+            disabled={uploadingImage}
+          />
+          {uploadingImage ? (
+            <>
+              <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-gray-500">{uploadProgress.current} / {uploadProgress.total}</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-5 h-5 text-gray-400" />
+              <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}</span>
+            </>
+          )}
+        </label>
 
         <p className="text-sm text-gray-500">
           {t('propertyForm.uploadHint')}
