@@ -896,7 +896,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, userPh
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={images} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 max-h-[420px] overflow-y-auto pr-1">
               {images.map((img, idx) => (
                 <SortablePhoto
                   key={img}
