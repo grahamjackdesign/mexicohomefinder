@@ -78,7 +78,7 @@ const content = {
     },
     success: {
       title: 'Listing Submitted!',
-      body: "Thanks! We'll review your property and get it live within 24 hours. We'll contact you via WhatsApp once it's approved.",
+      body: "Thanks! We'll review your property and get it live within 24 hours. We'll contact you once it's approved.",
       note: "Want to manage your listings and receive leads directly? We'll send you an invite to create a free account once your property is approved.",
     },
   },

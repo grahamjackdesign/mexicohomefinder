@@ -25,6 +25,7 @@
     "next-sanity": "^11.6.12",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-swipeable": "^7.0.2",
     "resend": "^6.10.0",
     "sanity": "^4.22.0",
     "stripe": "^22.0.0",

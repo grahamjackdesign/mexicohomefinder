@@ -29,10 +29,10 @@ import {
   Home,
   Car,
   Save,
+  Send,
   Image as ImageIcon,
   CheckCircle,
   AlertCircle,
-  XCircle,
   Building,
   Video,
   GripVertical,
@@ -41,6 +41,7 @@ import {
 const PROPERTY_CATEGORIES = [
   { value: 'house', label: 'House / Casa' },
   { value: 'apartment', label: 'Apartment / Departamento' },
+  { value: 'condo', label: 'Condo / Condominio' },
   { value: 'townhouse', label: 'Townhouse' },
   { value: 'villa', label: 'Villa' },
   { value: 'hacienda', label: 'Hacienda' },
@@ -114,14 +115,15 @@ function SortablePhoto({ id, url, index, onRemove }: { id: string; url: string; 
 
 type Props = {
   userId: string;
-  onDelete?: () => void;
   userEmail: string;
   userName: string;
+  userPhone: string;
   existingProperty?: any;
 };
 
-export default function PublicPropertyForm({ userId, userEmail, userName, existingProperty, onDelete }: Props) {
+export default function PublicPropertyForm({ userId, userEmail, userName, userPhone, existingProperty }: Props) {
   const { t } = useTranslations();
+  const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [images, setImages] = useState<string[]>(existingProperty?.images || []);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -129,14 +131,26 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const [agentUserId, setAgentUserId] = useState<string | null>(existingProperty?.agent_user_id || null);
+
+  useEffect(() => {
+    if (!agentUserId) {
+      supabase
+        .from('agent_users')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+        .then(({ data }) => {
+          if (data) setAgentUserId(data.id);
+        });
+    }
+  }, [userId]);
+
   // DnD sensors for photo reorder
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  const MOBILE_IMAGE_LIMIT = 6;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -150,8 +164,8 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   };
 
   // Cascading location state
-  const [selectedState, setSelectedState] = useState(existingProperty?.state || 'Guanajuato');
-  const [selectedMunicipality, setSelectedMunicipality] = useState(existingProperty?.municipality || 'San Miguel de Allende');
+  const [selectedState, setSelectedState] = useState(existingProperty?.state || '');
+  const [selectedMunicipality, setSelectedMunicipality] = useState(existingProperty?.municipality || '');
   const [availableMunicipalities, setAvailableMunicipalities] = useState<{ name: string }[]>([]);
 
   // Form data
@@ -172,7 +186,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     address: existingProperty?.address || '',
     country: 'Mexico',
     // Basic amenities
-    featured: existingProperty?.featured || false,
     has_pool: existingProperty?.has_pool || false,
     has_ac: existingProperty?.has_ac || false,
     pets_allowed: existingProperty?.pets_allowed || false,
@@ -182,9 +195,9 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     // Video
     video_url: existingProperty?.video_url || '',
     // Contact
-    contact_name: existingProperty?.contact_name || 'Ulises',
+    contact_name: existingProperty?.contact_name || userName || '',
     contact_email: existingProperty?.contact_email || userEmail || '',
-    contact_phone: existingProperty?.contact_phone || '',
+    contact_phone: existingProperty?.contact_phone || userPhone || '',
     // Extended amenities
     has_spa: existingProperty?.has_spa || false,
     has_jacuzzi: existingProperty?.has_jacuzzi || false,
@@ -227,7 +240,7 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   };
 
   // Categories that show bedrooms/bathrooms
-  const categoriesWithBedrooms = ['house', 'apartment', 'townhouse', 'villa', 'hacienda', 'ranch'];
+  const categoriesWithBedrooms = ['house', 'apartment', 'condo', 'townhouse', 'villa', 'hacienda', 'ranch'];
   const showBedrooms = categoriesWithBedrooms.includes(formData.property_category);
 
   // Extract coordinates from Google Maps link
@@ -276,25 +289,18 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    setError(null);
-
-    // On mobile, enforce 6 image limit
-    const remainingSlots = isMobile ? Math.max(0, MOBILE_IMAGE_LIMIT - images.length) : files.length;
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
-
-    if (filesToProcess.length === 0) return;
-
     setUploadingImage(true);
-    setUploadProgress({ current: 0, total: filesToProcess.length });
+    setUploadProgress({ current: 0, total: files.length });
+    setError(null); // Clear error when uploading
 
     const newImages: string[] = [];
 
-    for (let i = 0; i < filesToProcess.length; i++) {
+    for (let i = 0; i < files.length; i++) {
       try {
         setUploadProgress({ current: i + 1, total: files.length });
 
         // Compress image
-        const compressedFile = await imageCompression(filesToProcess[i], {
+        const compressedFile = await imageCompression(files[i], {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
           useWebWorker: true,
@@ -335,9 +341,11 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
   };
 
   // Build property data for save
-  const buildPropertyData = (status: 'draft' | 'pending' | 'active') => {
+  const buildPropertyData = (status: 'draft' | 'pending') => {
     return {
-      public_user_id: userId,
+      agent_user_id: agentUserId,
+      site: 'mexico-home-finder',
+      approval_status: status === 'pending' ? 'pending' : 'draft',
       title: formData.title,
       description: formData.description,
       security: formData.security,
@@ -358,7 +366,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       latitude: extractedCoords?.lat || null,
       longitude: extractedCoords?.lng || null,
       images,
-      featured: formData.featured,
       has_pool: formData.has_pool,
       has_ac: formData.has_ac,
       pets_allowed: formData.pets_allowed,
@@ -385,42 +392,14 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       has_elevator: formData.has_elevator,
       has_padel_court: formData.has_padel_court,
       status,
-      site: 'refugio-realty',
     };
   };
 
-  const deleteProperty = async () => {
-    if (!existingProperty?.id) return;
-    if (!confirm('Are you sure you want to delete this property? This cannot be undone.')) return;
-    await supabase.from('properties').delete().eq('id', existingProperty.id);
-    onDelete?.();
-  };
-
-  // Save property as active
-  // Save property as active
-  const saveProperty = async () => {
+  // Save draft
+  const saveDraft = async () => {
     setSaveStatus('saving');
-    setError(null);
     try {
-      // Get agent_user_id for this auth user
-      const { data: agentUser, error: agentError } = await supabase
-        .from('agent_users')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-
-      if (agentError || !agentUser) {
-        const msg = `No agent record found (userId: ${userId}) — ${agentError?.message || 'unknown error'}`;
-        console.error(msg);
-        setError(msg);
-        setSaveStatus('error');
-        return;
-      }
-
-      const propertyData = {
-        ...buildPropertyData('active'),
-        agent_user_id: agentUser.id,
-      };
+      const propertyData = buildPropertyData('draft');
 
       if (existingProperty?.id) {
         const { error } = await supabase
@@ -436,22 +415,77 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
       }
 
       setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setSaveStatus('error');
+    }
+  };
+
+  // Submit for review
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate at least one photo
+    if (images.length < 4) {
+  setError('Please upload at least 4 photos of your property. Listings without enough photos cannot be accepted.');
+      document.getElementById('photos-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const propertyData = buildPropertyData('pending');
+
+      if (existingProperty?.id) {
+        const { error } = await supabase
+          .from('properties')
+          .update(propertyData)
+          .eq('id', existingProperty.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('properties')
+          .insert(propertyData);
+        if (error) throw error;
+      }
+
+      // Fire notification email
+      await fetch('/api/admin/notify-submission', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          neighborhood: formData.neighborhood,
+          state: selectedState,
+          contact_name: formData.contact_name,
+          contact_email: formData.contact_email,
+          contact_phone: formData.contact_phone,
+          price: formData.price,
+          currency: formData.currency,
+        }),
+      })
+
       setShowSuccess(true);
       setTimeout(() => {
         window.location.href = '/list-property/dashboard';
       }, 2000);
     } catch (err: any) {
-      const msg = err?.message || JSON.stringify(err) || 'Unknown error';
-      console.error('Error saving property:', msg);
-      setError(`Save failed: ${msg}`);
-      setSaveStatus('error');
+      console.error('Error submitting property:', err);
+      console.error('Error details:', JSON.stringify(err, null, 2));
+      console.error('Error message:', err?.message);
+      console.error('Error code:', err?.code);
+      setError(err?.message || 'Failed to submit property. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-
   return (
     <>
-      {/* Success message */}
+      {/* Success Popup */}
       {showSuccess && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center animate-in fade-in zoom-in duration-300">
@@ -459,17 +493,20 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h2 className="text-xl font-bold text-primary mb-3">
-              Property Saved!
+              {t('propertyForm.successTitle') || 'Property Submitted! / ¡Propiedad Enviada!'}
             </h2>
             <p className="text-gray-600">
-              Your property is now live on Refugio Realty.
+              Thanks for submitting your property to Mexico Home Finder. We will review it and get back to you within 24 hours.
             </p>
-            <p className="text-sm text-gray-400 mt-4">Redirecting to your listings...</p>
+            <p className="text-gray-600 mt-2">
+              Gracias por enviar tu propiedad a Mexico Home Finder. La revisaremos y te responderemos en un plazo de 24 horas.
+            </p>
+            <p className="text-sm text-gray-400 mt-4">Redirecting to homepage... / Redirigiendo a la página principal...</p>
           </div>
         </div>
       )}
 
-      <form className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
       {/* Basic Information */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
@@ -674,28 +711,63 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* State - locked to Guanajuato */}
+          {/* State - cascading */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('propertyForm.state')} *
             </label>
-            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-between">
-              <span className="text-gray-700 font-medium">Guanajuato</span>
-              <span className="text-xs text-gray-400 italic">Fixed</span>
-            </div>
-            <input type="hidden" value="Guanajuato" />
+            <select
+              required
+              value={selectedState}
+              onChange={(e) => handleStateChange(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
+            >
+              <option value="">{t('propertyForm.selectState')}</option>
+              {getStateNames().map(state => (
+                <option key={state} value={state}>{state}</option>
+              ))}
+            </select>
           </div>
 
-          {/* Municipality - locked to San Miguel de Allende */}
+          {/* Municipality - cascading with free text option */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('propertyForm.municipality')} *
             </label>
-            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-between">
-              <span className="text-gray-700 font-medium">San Miguel de Allende</span>
-              <span className="text-xs text-gray-400 italic">Fixed</span>
-            </div>
-            <input type="hidden" value="San Miguel de Allende" />
+            {availableMunicipalities.length > 0 ? (
+              <>
+                <select
+                  value={selectedMunicipality}
+                  onChange={(e) => setSelectedMunicipality(e.target.value)}
+                  disabled={!selectedState}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:bg-gray-100 disabled:cursor-not-allowed"
+                >
+                  <option value="">
+                    {selectedState ? t('propertyForm.selectOrType') : t('propertyForm.selectStateFirst')}
+                  </option>
+                  {availableMunicipalities.map(muni => (
+                    <option key={muni.name} value={muni.name}>{muni.name}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={selectedMunicipality}
+                  onChange={(e) => setSelectedMunicipality(e.target.value)}
+                  placeholder={t('propertyForm.orTypeMunicipality')}
+                  className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary"
+                />
+              </>
+            ) : (
+              <input
+                type="text"
+                required
+                value={selectedMunicipality}
+                onChange={(e) => setSelectedMunicipality(e.target.value)}
+                disabled={!selectedState}
+                placeholder={selectedState ? t('propertyForm.typeMunicipality') : t('propertyForm.selectStateFirst')}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-secondary/20 focus:border-secondary disabled:bg-gray-100 disabled:cursor-not-allowed"
+              />
+            )}
           </div>
 
           {/* Neighborhood */}
@@ -771,17 +843,6 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           </select>
         </div>
 
-        {/* Featured */}
-        <label className="flex items-center gap-3 p-3 border border-amber-200 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors w-fit">
-          <input
-            type="checkbox"
-            checked={formData.featured || false}
-            onChange={(e) => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
-            className="w-4 h-4 accent-amber-500"
-          />
-          <span className="text-sm font-semibold text-amber-800">⭐ Featured on homepage</span>
-        </label>
-
         {/* All Amenities as Checkboxes */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
@@ -835,53 +896,43 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
 
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={images} strategy={rectSortingStrategy}>
-            {images.length > 0 && (
-              <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="mb-4 pr-1">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((img, idx) => (
-                    <SortablePhoto
-                      key={img}
-                      id={img}
-                      url={img}
-                      index={idx}
-                      onRemove={removeImage}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 max-h-[420px] overflow-y-auto pr-1">
+              {images.map((img, idx) => (
+                <SortablePhoto
+                  key={img}
+                  id={img}
+                  url={img}
+                  index={idx}
+                  onRemove={removeImage}
+                />
+              ))}
+
+              <label className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-secondary hover:bg-secondary/5 transition-colors">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
+                {uploadingImage ? (
+                  <>
+                    <div className="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mb-2" />
+                    <span className="text-sm text-gray-500">
+                      {uploadProgress.current} / {uploadProgress.total}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                    <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}</span>
+                  </>
+                )}
+              </label>
+            </div>
           </SortableContext>
         </DndContext>
-
-        {/* Upload button — always visible below images */}
-        {isMobile && images.length >= MOBILE_IMAGE_LIMIT ? (
-          <div className="w-full py-4 mb-4 border-2 border-dashed border-gray-200 rounded-xl text-center bg-gray-50">
-            <p className="text-sm font-medium text-gray-600">Maximum 6 photos on mobile</p>
-            <p className="text-xs text-gray-400 mt-1">To upload more photos, please use a desktop or laptop</p>
-          </div>
-        ) : (
-          <label className={`flex items-center justify-center gap-3 w-full py-4 mb-4 border-2 border-dashed rounded-xl transition-colors ${uploadingImage ? 'border-gray-200 bg-gray-50 cursor-not-allowed' : 'border-gray-300 cursor-pointer hover:border-secondary hover:bg-secondary/5'}`}>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageUpload}
-              className="hidden"
-              disabled={uploadingImage}
-            />
-            {uploadingImage ? (
-              <>
-                <div className="w-5 h-5 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-gray-500">{uploadProgress.current} / {uploadProgress.total}</span>
-              </>
-            ) : (
-              <>
-                <Upload className="w-5 h-5 text-gray-400" />
-                <span className="text-sm text-gray-500">{t('propertyForm.uploadPhotos')}{isMobile && ` (${images.length}/${MOBILE_IMAGE_LIMIT})`}</span>
-              </>
-            )}
-          </label>
-        )}
 
         <p className="text-sm text-gray-500">
           {t('propertyForm.uploadHint')}
@@ -969,13 +1020,13 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
             {saveStatus === 'saving' && (
               <span className="text-gray-500 flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                Saving...
+                {t('propertyForm.saving')}
               </span>
             )}
             {saveStatus === 'saved' && (
               <span className="text-green-600 flex items-center gap-2">
                 <CheckCircle className="w-4 h-4" />
-                Saved
+                {t('propertyForm.draftSaved')}
               </span>
             )}
             {saveStatus === 'error' && (
@@ -987,31 +1038,30 @@ export default function PublicPropertyForm({ userId, userEmail, userName, existi
           </div>
 
           <div className="flex items-center gap-3">
-            {existingProperty?.id && (
-              <button
-                type="button"
-                onClick={deleteProperty}
-                className="flex items-center gap-2 px-4 py-2.5 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl font-semibold transition-colors text-sm"
-              >
-                <XCircle className="w-4 h-4" />
-                Delete
-              </button>
-            )}
-          <button
-            type="button"
-            onClick={saveProperty}
-            disabled={saveStatus === 'saving'}
-            className="flex items-center gap-2 px-6 py-2.5 bg-secondary hover:bg-secondary-dark text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
-          >
-            {saveStatus === 'saving' ? (
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save Property
-              </>
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={saveDraft}
+              disabled={loading || saveStatus === 'saving'}
+              className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Save className="w-4 h-4" />
+              {t('propertyForm.saveDraft')}
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex items-center gap-2 px-6 py-2.5 bg-secondary hover:bg-secondary-dark text-white rounded-xl font-semibold transition-colors disabled:opacity-50"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  {t('propertyForm.submit')}
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>

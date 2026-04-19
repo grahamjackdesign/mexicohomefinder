@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Property } from '@/lib/supabase';
 import PropertyCard from '@/components/PropertyCard';
 import LeadForm from '@/components/LeadForm';
+import { useSwipeable } from 'react-swipeable';
 import {
   ChevronLeft,
   ChevronRight,
@@ -38,6 +39,12 @@ export default function PropertyDetailClient({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showGallery, setShowGallery] = useState(false);
   const [copied, setCopied] = useState(false);
+  const swipeHandlers = useSwipeable({
+  onSwipedLeft: () => nextImage(),
+  onSwipedRight: () => prevImage(),
+  trackMouse: false, // true if you want it to work with mouse drag on desktop too
+  preventScrollOnSwipe: true,
+});
 
   const images = property.images || [];
   const hasMultipleImages = images.length > 1;
@@ -136,15 +143,21 @@ export default function PropertyDetailClient({
 
           {/* Mobile: Carousel */}
           <div className="md:hidden relative h-80">
+            <div
+            {...swipeHandlers}
+            className="relative w-full h-full max-w-6xl max-h-[90vh] mx-12 sm:mx-16"
+          >
             {images[currentImageIndex] && (
               <Image
                 src={images[currentImageIndex]}
-                alt={property.title}
+                alt={`${property.title} - Image ${currentImageIndex + 1}`}
                 fill
-                className="object-cover"
-                priority
+                className="object-contain"
+                sizes="100vw"
+                draggable={false}
               />
             )}
+          </div>
             {hasMultipleImages && (
               <>
                 <button
@@ -386,28 +399,30 @@ export default function PropertyDetailClient({
             {currentImageIndex + 1} / {images.length}
           </div>
           <div className="h-full flex items-center justify-center p-4">
-            <button
-              onClick={prevImage}
-              className="absolute left-4 p-3 bg-white/10 hover:bg-white/20 rounded-full"
-            >
-              <ChevronLeft className="w-8 h-8 text-white" />
-            </button>
+          <button
+            onClick={prevImage}
+            className="absolute left-2 sm:left-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full z-10"
+          >
+            <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+          </button>
+          <div className="relative w-full h-full max-w-6xl max-h-[90vh] mx-12 sm:mx-16">
             {images[currentImageIndex] && (
               <Image
                 src={images[currentImageIndex]}
                 alt={`${property.title} - Image ${currentImageIndex + 1}`}
-                width={1200}
-                height={800}
-                className="max-h-[90vh] w-auto object-contain"
+                fill
+                className="object-contain"
+                sizes="100vw"
               />
             )}
-            <button
-              onClick={nextImage}
-              className="absolute right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full"
-            >
-              <ChevronRight className="w-8 h-8 text-white" />
-            </button>
           </div>
+          <button
+            onClick={nextImage}
+            className="absolute right-2 sm:right-4 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full z-10"
+          >
+            <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+          </button>
+        </div>
           {/* Thumbnails */}
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto p-2">
             {images.map((img, index) => (
