@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { getStateNames, getMunicipalitiesByState } from '@/lib/locations';
 import {
   Upload,
   X,
@@ -178,6 +179,25 @@ export default function ListPropertyPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Cascading location state
+  const [selectedState, setSelectedState] = useState<string>('Guanajuato');
+  const [selectedMunicipality, setSelectedMunicipality] = useState<string>('San Miguel de Allende');
+  const [availableMunicipalities, setAvailableMunicipalities] = useState<{ name: string }[]>(
+    getMunicipalitiesByState('Guanajuato')
+  );
+
+  const handleStateChange = (newState: string) => {
+    setSelectedState(newState);
+    setSelectedMunicipality('');
+    setAvailableMunicipalities(getMunicipalitiesByState(newState));
+    setFormData((prev) => ({ ...prev, state: newState, municipality: '' }));
+  };
+
+  const handleMunicipalityChange = (newMuni: string) => {
+    setSelectedMunicipality(newMuni);
+    setFormData((prev) => ({ ...prev, municipality: newMuni }));
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -434,22 +454,58 @@ export default function ListPropertyPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className={labelClass}>{t.fields.municipality}</label>
-                    <input
-                      type="text"
-                      className={inputClass}
-                      value={formData.municipality}
-                      onChange={(e) => setFormData({ ...formData, municipality: e.target.value })}
-                    />
+                    <label className={labelClass}>{t.fields.state}</label>
+                    <div className="relative">
+                      <select
+                        className={selectClass}
+                        value={selectedState}
+                        onChange={(e) => handleStateChange(e.target.value)}
+                      >
+                        <option value="">
+                          {lang === 'es' ? 'Selecciona estado' : 'Select state'}
+                        </option>
+                        {getStateNames().map((state) => (
+                          <option key={state} value={state}>{state}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                   <div>
-                    <label className={labelClass}>{t.fields.state}</label>
-                    <input
-                      type="text"
-                      className={inputClass}
-                      value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                    />
+                    <label className={labelClass}>{t.fields.municipality}</label>
+                    {availableMunicipalities.length > 0 ? (
+                      <div className="relative">
+                        <select
+                          className={selectClass}
+                          value={selectedMunicipality}
+                          onChange={(e) => handleMunicipalityChange(e.target.value)}
+                          disabled={!selectedState}
+                        >
+                          <option value="">
+                            {selectedState
+                              ? (lang === 'es' ? 'Selecciona municipio' : 'Select municipality')
+                              : (lang === 'es' ? 'Selecciona estado primero' : 'Select state first')}
+                          </option>
+                          {availableMunicipalities.map((muni) => (
+                            <option key={muni.name} value={muni.name}>{muni.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        className={inputClass}
+                        value={selectedMunicipality}
+                        onChange={(e) => handleMunicipalityChange(e.target.value)}
+                        disabled={!selectedState}
+                        placeholder={
+                          selectedState
+                            ? (lang === 'es' ? 'Escribe el municipio' : 'Type municipality')
+                            : (lang === 'es' ? 'Selecciona estado primero' : 'Select state first')
+                        }
+                      />
+                    )}
                   </div>
                 </div>
               </div>

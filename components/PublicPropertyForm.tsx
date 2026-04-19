@@ -117,7 +117,7 @@ type Props = {
   userId: string;
   userEmail: string;
   userName: string;
-  userPhone: string;
+  userPhone?: string;
   existingProperty?: any;
 };
 
